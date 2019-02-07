@@ -27,7 +27,7 @@ public class ScatterPlot extends Application {
                 ScatterChart<Number, Number>(xAxis, yAxis);
         xAxis.setLabel("X");
         yAxis.setLabel("Y");
-        sc.setTitle("Investment Overview");
+        sc.setTitle("Customers plot");
 
         for (int i = 0; i < bean.depots; i++) {
             XYChart.Series seriesDepot = new XYChart.Series();

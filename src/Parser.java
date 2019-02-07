@@ -58,11 +58,15 @@ public class Parser {
 
             for (int i = 0; i < bean.customers; i++) {
                 line = scanner.nextLine();
+                if(line.startsWith(" ")){
+                    line = line.substring(1);
+                }
                 parts = line.split("\\s+");
                 bean.customer_x[i] = Integer.parseInt(parts[1]);
                 bean.customer_y[i] = Integer.parseInt(parts[2]);
                 bean.service_duration[i] = Integer.parseInt(parts[3]);
                 bean.service_demand[i] = Integer.parseInt(parts[4]);
+                bean.totalDemand += bean.service_demand[i];
 
                 if(bean.customer_x[i] > bean.max_x){
                     bean.max_x = bean.customer_x[i];
@@ -96,6 +100,15 @@ public class Parser {
                     bean.min_y = bean.customer_y[i];
                 }
             }
+
+            bean.totalVehicles = bean.depots*bean.vehicles;
+            int minLoad = Integer.MAX_VALUE;
+            for(int i = 0; i < bean.vehicle_load.length;i++){
+                if(bean.vehicle_load[i]<minLoad){
+                    minLoad=bean.vehicle_load[i];
+                }
+            }
+            bean.minVehicles = (int)Math.ceil(bean.totalDemand/(float)minLoad);
 
         } catch (IOException e) {
             e.printStackTrace();

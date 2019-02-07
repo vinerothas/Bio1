@@ -8,96 +8,66 @@ public class Pop {
     int vehicles;
 
 
-    float fitness = -1;
+    float fitness = Float.MAX_VALUE;
 
-    public Pop(int[] genotype,int vehicles){
+    public Pop(int[] genotype, int vehicles) {
         this.genotype = genotype;
         this.vehicles = vehicles;
     }
 
+    public Pop(Pop pop) {
+        this.genotype = pop.genotype.clone();
+        this.vehicles = pop.vehicles;
+    }
+
     // SJEKKER IKKE OM FOR MANGE BILER FRA SAMME DEPOT
     // BEREGN ALLE EUCLIDEAN DISTANCES PÅ FORHÅND I BEAN
-    public float calculateFitness(Bean bean){
+    public float calculateFitness(Bean bean) {
+        //int[][] routes = new int[vehicles][20];
         fitness = 0;
         int[] od = new int[vehicles]; // origin depot of each vehicle
         int[] vd = new int[vehicles]; //demand per vehicle
-        for(int i = 0;i<vehicles;i++){
+        for (int i = 0; i < vehicles; i++) {
             // move each vehicle to their first customer
             od[i] = bean.nearestDepot[i];
-            fitness += Util.edist(bean.customer_x[i],bean.customer_y[i],bean.depot_x[od[i]],bean.depot_y[od[i]]);
+            fitness += bean.depotCustomerDist[od[i]][genotype[i]];
             vd[i] = bean.service_demand[i];
             //if(bean.service_demand[i]>bean.vehicle_load[od[i]]){
-            //    fitness = -1;
-            //    return -1;
+            //    fitness = Float.MAX_VALUE;
+            //    return Float.MAX_VALUE;
             //}
         }
 
         int[] lc = new int[vehicles]; //last customer
         int cv = -1; //current vehicle
-        for(int i = vehicles;i<genotype.length;i++){
+        for (int i = vehicles; i < genotype.length; i++) {
             // move each vehicle to their next customer until capacity reached
             int j;
-            for(j = 0; j<vehicles;j++){
+            for (j = 0; j < vehicles; j++) {
                 cv++;
-                if(cv==vehicles){
+                if (cv == vehicles) {
                     cv = 0;
                 }
-                if(vd[cv] > bean.vehicle_load[od[cv]]){
+                if (vd[cv] > bean.vehicle_load[od[cv]]) {
                     continue; //current vehicle up to capacity
                 }
                 vd[cv] += bean.service_demand[i];
-                if(vd[cv] > bean.vehicle_load[od[cv]]){
-                    fitness += Util.edist(bean.customer_x[lc[cv]],bean.customer_y[lc[cv]],bean.depot_x[bean.nearestDepot[lc[cv]]],bean.depot_y[bean.nearestDepot[lc[cv]]]);
+                if (vd[cv] > bean.vehicle_load[od[cv]]) {
+                    fitness += bean.depotCustomerDist[bean.nearestDepot[lc[cv]]][lc[cv]];
                     continue; //current vehicle up to capacity and returning to depot
                 }
-                fitness += Util.edist(bean.customer_x[lc[cv]],bean.customer_y[lc[cv]],bean.customer_x[i],bean.customer_y[i]);
+                fitness += bean.customerDist[lc[cv]][genotype[i]];
                 break; //customer successfully served
             }
-            if(j == vehicles) {
-                fitness = -1;
-                return -1;
+            if (j == vehicles) {
+                fitness = Float.MAX_VALUE;
+                return Float.MAX_VALUE;
             }
         }
         return fitness;
     }
 
-    // SJEKKER IKKE OM FOR MANGE BILER FRA SAMME DEPOT
-    // BEREGN ALLE EUCLIDEAN DISTANCES PÅ FORHÅND I BEAN
-//    public float calculateFitnessV1(Bean bean){
-//        int demand = 0;
-//        fitness = 0;
-//        int lc = -1; // last customer
-//        int c; //current customer id
-//        int nd; // nearest depot
-//        int origin_depot = -1;
-//        for(int i = 0; i<genotype.length;i++){
-//            c = genotype[i];
-//            demand += bean.service_demand[c];
-//            if(origin_depot != -1 && demand > bean.vehicle_load[origin_depot]){
-//                //next customer has too high demand - return to nearest depot
-//                nd = bean.nearestDepot[lc];
-//                fitness += Util.edist(bean.customer_x[lc],bean.customer_y[lc],bean.depot_x[nd],bean.depot_y[nd]);
-//                lc = -1;
-//                demand = bean.service_demand[c];
-//            }
-//            if(lc==-1) {
-//                //first customer for a vehicle coming straight from a depot
-//                nd = bean.nearestDepot[c];
-//                origin_depot = nd;
-//                fitness += Util.edist(bean.customer_x[c],bean.customer_y[c],bean.depot_x[nd],bean.depot_y[nd]);
-//            }else{
-//                //drive between customers
-//                fitness += Util.edist(bean.customer_x[c],bean.customer_y[c],bean.customer_x[lc],bean.customer_y[lc]);
-//            }
-//            lc = c;
-//        }
-//        //handle last return
-//        nd = bean.nearestDepot[lc];
-//        fitness += Util.edist(bean.customer_x[lc],bean.customer_y[lc],bean.depot_x[nd],bean.depot_y[nd]);
-//        return fitness;
-//    }
-
     public String toString() {
-        return("Fitness: "+fitness+"  Vehicles: "+vehicles+"  Genotype: " + Arrays.toString(genotype)+"\n");
+        return ("Fitness: " + fitness + "  Vehicles: " + vehicles + "  Genotype: " + Arrays.toString(genotype) + "\n");
     }
 }
