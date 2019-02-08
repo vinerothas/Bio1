@@ -1,13 +1,11 @@
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Random;
+import java.util.*;
 
 public class GA {
 
     Pop[] population;
-    int popSize = 200;
-    float mutationRateG = 1;
-    float mutationRateV = 1;
+    int popSize = 300;
+    float mutationRateM = 1;
+    float mutationRateS = 1;
     float crossoverRate;
     Bean bean;
     //enum mutation type
@@ -22,6 +20,7 @@ public class GA {
             population[i] = new Pop(r, bean);
             population[i].calculateFitness(bean);
         }
+        Arrays.sort(population, new SortPop());
         //System.out.println(Arrays.toString(population));
     }
 
@@ -30,25 +29,27 @@ public class GA {
         for(int i = 0; i<population.length;i++){
             children[i] = new Pop(population[i]);
             float chance = r.nextFloat();
-            if(chance<=mutationRateG){
-                //Mutator.MutateG(children[i],r);
+            if(chance<= mutationRateM){
+                Mutator.MutateM(children[i],r);
+                Mutator.MutateM(children[i],r);
+                Mutator.MutateM(children[i],r);
             }
             chance = r.nextFloat();
-            if(chance<=mutationRateV){
-                //Mutator.MutateV(children[i],r,bean);
+            if(chance<= mutationRateS){
+                Mutator.MutateS(children[i],r);
+                Mutator.MutateS(children[i],r);
+                Mutator.MutateS(children[i],r);
             }
             children[i].calculateFitness(bean);
         }
         Arrays.sort(children, new SortPop());
-        //population = children;
+
+        int sel = 0;
+        population = Selector.select(sel,children,population);
         Arrays.sort(population, new SortPop());
-        Pop[] nextGen = new Pop[population.length];
-        for(int i = 0; i<population.length/2;i++){
-            nextGen[i*2] = population[i];
-            nextGen[i*2+1] = children[i];
-        }
-        population = nextGen;
     }
+
+
 
     class SortPop implements Comparator<Pop> {
         public int compare(Pop a, Pop b) {

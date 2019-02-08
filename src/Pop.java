@@ -6,8 +6,6 @@ public class Pop {
 
     //order of customers for each vehicle
     int[][] customerOrder;
-    //starting depot of each vehicle
-    int[] startingDepots;
     // length of startingDepots
     int vehicles;
 
@@ -27,25 +25,18 @@ public class Pop {
         int cvl = bean.customers/vehicles; //customers per vehicle, lower bound
         int cvh = cvl+1; //customers per vehicle, higher bound
         int vh = bean.customers-cvl*vehicles; //number of higher bound vehicles
-        int vl = vehicles-vh; //number of lower bound vehicles
         int cc = 0; //current customer to assign
-        for(int i = 0; i<vehicles-1;i++){ //assign customers to all vehicles except the last
+        for(int i = 0; i<vh;i++){ //assign customers to all higher bound vehicles
+            customerOrder[i] = new int[cvh];
+            for(int j = 0; j < cvh; j++){
+                customerOrder[i][j] = customers[cc++];
+            }
+        }
+        for(int i = vh; i<vehicles;i++){ //assign customers to all lower bound vehicles
             customerOrder[i] = new int[cvl];
             for(int j = 0; j < cvl; j++){
                 customerOrder[i][j] = customers[cc++];
             }
-        }
-
-        int lv = vehicles-1; //id of last vehicle
-        int lvc = bean.customers-cc; //customers assigned to the last vehicle
-        customerOrder[lv] = new int[lvc];
-        for(int i = 0;i<lvc;i++){ //assign customers to the last vehicle
-            customerOrder[lv][i] = customers[cc++];
-        }
-
-        startingDepots = new int[vehicles];
-        for(int i = 0;i<vehicles;i++){ //make each vehicle start at the depot nearest to its first customer
-            startingDepots[i] = bean.nearestDepot[customerOrder[i][0]];
         }
 
     }
@@ -60,7 +51,6 @@ public class Pop {
                 customerOrder[i][j] = pop.customerOrder[i][j];
             }
         }
-        this.startingDepots = pop.startingDepots.clone();
     }
 
     // SJEKKER IKKE OM FOR MANGE BILER FRA SAMME DEPOT
@@ -68,15 +58,17 @@ public class Pop {
         fitness = 0;
         int demand = 0;
         for(int i = 0; i<vehicles;i++){
-            //handle the first customer
-            demand += bean.service_demand[customerOrder[i][0]];
-            fitness += bean.depotCustomerDist[startingDepots[i]][customerOrder[i][0]];
+
+            int sd = bean.nearestDepot[customerOrder[i][0]]; //starting depot
+            demand += bean.service_demand[customerOrder[i][0]]; //handle the first customer
+            fitness += bean.depotCustomerDist[sd][customerOrder[i][0]];
+
             for(int j = 1;j<customerOrder[i].length;j++){ //handle the rest of the customers for the current vehicle
                 demand += bean.service_demand[customerOrder[i][j]];
                 fitness += bean.customerDist[customerOrder[i][j-1]][customerOrder[i][j]];
             }
 
-            if(demand>bean.vehicle_load[startingDepots[i]]){ //invalid solution if demand exceeds capacity
+            if(demand>bean.vehicle_load[sd]){ //invalid solution if demand exceeds capacity
                 fitness = Float.MAX_VALUE;
                 return;
             }
@@ -94,5 +86,22 @@ public class Pop {
             s += Arrays.toString(ints)+"\n";
         }
         return s;
+    }
+
+    //p01 best pop
+    public Pop(boolean check) {
+        this.vehicles = 11;
+        customerOrder = new int[vehicles][];
+        customerOrder[0] = new int[]{40, 39, 18, 41, 43};
+        customerOrder[1] = new int[]{12, 24, 13,};
+        customerOrder[2] = new int[]{3, 17, 46};
+        customerOrder[3] = new int[]{10, 31, 0, 26};
+        customerOrder[4] = new int[]{22, 6, 42, 23, 5};
+        customerOrder[5] = new int[]{47, 7, 25, 30, 27, 21};
+        customerOrder[6] = new int[]{45, 11, 4, 37,};
+        customerOrder[7] = new int[]{48, 29, 33, 8,};
+        customerOrder[8] = new int[]{9, 38, 32, 44, 14, 36, 16};
+        customerOrder[9] = new int[]{28, 1, 15, 49, 20};
+        customerOrder[10] = new int[]{19, 2, 35, 34,};
     }
 }

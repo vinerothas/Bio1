@@ -1,3 +1,4 @@
+import java.lang.reflect.Array;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -18,5 +19,17 @@ public class Util {
     // Euclidean distance
     static float edist(int x1, int y1, int x2, int y2){
         return (float)Math.sqrt(Math.pow(x1-x2,2) + Math.pow(y1-y2,2));
+    }
+
+    static public <T> T[] concatenate(T[] a, T[] b) {
+        int aLen = a.length;
+        int bLen = b.length;
+
+        @SuppressWarnings("unchecked")
+        T[] c = (T[]) Array.newInstance(a.getClass().getComponentType(), aLen + bLen);
+        System.arraycopy(a, 0, c, 0, aLen);
+        System.arraycopy(b, 0, c, aLen, bLen);
+
+        return c;
     }
 }
