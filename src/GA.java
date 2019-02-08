@@ -1,7 +1,6 @@
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
-import java.util.stream.IntStream;
 
 public class GA {
 
@@ -19,14 +18,8 @@ public class GA {
         this.bean = bean;
         population = new Pop[popSize];
 
-        int bound = bean.totalVehicles-bean.minVehicles+1;
-
         for (int i = 0; i < popSize; i++) {
-            int[] genotype = IntStream.range(0, bean.customers).toArray();
-            //int[] genotype = {40,12,3,10,22,47,45,48,9,28,19,39,24,17,31,6,7,11,29,38,1,2,18,13};
-            int vehicles = r.nextInt(bound)+bean.minVehicles ;
-            Util.shuffleArray(genotype);
-            population[i] = new Pop(genotype,vehicles);
+            population[i] = new Pop(r, bean);
             population[i].calculateFitness(bean);
         }
         //System.out.println(Arrays.toString(population));
@@ -38,11 +31,11 @@ public class GA {
             children[i] = new Pop(population[i]);
             float chance = r.nextFloat();
             if(chance<=mutationRateG){
-                Mutator.MutateG(children[i],r);
+                //Mutator.MutateG(children[i],r);
             }
             chance = r.nextFloat();
             if(chance<=mutationRateV){
-                Mutator.MutateV(children[i],r,bean);
+                //Mutator.MutateV(children[i],r,bean);
             }
             children[i].calculateFitness(bean);
         }
