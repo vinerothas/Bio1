@@ -1,53 +1,23 @@
-import javafx.application.Application;
+package main;
+
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.stage.Stage;
 
-public class RoutePlot extends Application {
-    @Override public void start(Stage stage) {
+public class RoutePlot {
 
-        //bean.calculateNearestDepot();
-        //bean.calculateDist();
-        Bean bean = new Bean();
-        Solution solution = new Solution();
-
-        //loadSolution(bean,solution,1);
-
-        solution = new Start().runTest(23,bean);
-
-        plot(stage,solution,bean);
-
-    }
-
-    private void loadSolution(Bean bean, Solution solution, int test){
-        if (test < 10) {
-            solution.parse("resources/solutions/p0"+test+".res");
-        }else{
-            solution.parse("resources/solutions/p"+test+".res");
-        }
-        System.out.println(solution);
-
-        Parser parser = new Parser();
-        if (test < 10) {
-            parser.parseToBean("resources/data/p0"+test, bean);
-        }else{
-            parser.parseToBean("resources/data/p"+test, bean);
-        }
-    }
-
-    private void plot(Stage stage, Solution solution, Bean bean){
-        stage.setTitle("Line Chart Sample");
+    public static void plot(Stage stage, Solution solution, Bean bean){
+        stage.setTitle("Routes");
         //defining the axes
         final NumberAxis xAxis = new NumberAxis();
         final NumberAxis yAxis = new NumberAxis();
-        xAxis.setLabel("Number of Month");
         //creating the chart
         final LineChart<Number,Number> lineChart = new LineChart<Number,Number>(xAxis,yAxis);
         lineChart.setAxisSortingPolicy(LineChart.SortingPolicy.NONE);
 
-        lineChart.setTitle("Stock Monitoring, 2010");
+        lineChart.setTitle("Routes");
         //defining a series
         for (int i = 0; i < solution.routes; i++) {
             XYChart.Series series = new XYChart.Series();
@@ -70,7 +40,4 @@ public class RoutePlot extends Application {
         stage.show();
     }
 
-    public static void makePlot() {
-        launch();
-    }
 }

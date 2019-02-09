@@ -1,3 +1,4 @@
+package main;
 
 import java.io.File;
 import java.io.IOException;
@@ -5,10 +6,15 @@ import java.util.Scanner;
 
 public class Parser {
 
-    private ClassLoader classLoader = getClass().getClassLoader();
 
-    public void parseToBean(String filename, Bean bean) {
-        File file = new File(classLoader.getResource(filename).getFile());
+    public void parseToBean(int test, Bean bean) {
+        String filename;
+        if (test < 10) {
+            filename = "/resources/data/p0"+test;
+        }else{
+            filename = "/resources/data/p"+test;
+        }
+        File file = new File(getClass().getResource(filename).getFile());
 
         try (Scanner scanner = new Scanner(file)) {
             String line = scanner.nextLine();

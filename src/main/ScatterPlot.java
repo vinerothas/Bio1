@@ -1,3 +1,5 @@
+package main;
+
 import javafx.application.Application;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -15,7 +17,7 @@ public class ScatterPlot extends Application {
     public void start(Stage stage) {
         Parser parser = new Parser();
         Bean bean = new Bean();
-        parser.parseToBean("resources/data/p08", bean);
+        parser.parseToBean(8, bean);
         bean.calculateNearestDepot();
         bean.calculateDist();
         //bean.printBean();
@@ -51,24 +53,25 @@ public class ScatterPlot extends Application {
         stage.setScene(scene);
         stage.show();
 
-        String[] colors = {"red", "blue", "green", "#D0B518", "#ff8d01", "#ff00ab", "#00fcff", "#c201ff", "#757274", "#0d0d0d"};
-
+        String[] colors = {"red","#D0B518", "blue","green","#ff8d01","#ff00ab","#00fcff", "#c201ff", "#757274", "#0d0d0d"};
         for (int i = 0; i < bean.depots; i++) {
             int index = i*2;
             Set<Node> nodes = sc.lookupAll(".series" + index);
             for (Node n : nodes) {
-                n.setStyle("-fx-background-color: " + colors[i] + ", black;\n"
+                String s = "-fx-background-color: " + colors[i] + ", black;\n"
                         + "    -fx-background-insets: 0, 2;\n"
                         + "    -fx-background-radius: 5px;\n"
-                        + "    -fx-padding: 5px;");
+                        + "    -fx-padding: 5px;";
+                n.setStyle(s);
             }
             index++;
             nodes = sc.lookupAll(".series" + index);
             for (Node n : nodes) {
-                n.setStyle("-fx-background-color: " + colors[i] + ", " + colors[i] + ";\n"
+                String s = "-fx-background-color: " + colors[i] + ", " + colors[i] + ";\n"
                         + "    -fx-background-insets: 0, 2;\n"
                         + "    -fx-background-radius: 5px;\n"
-                        + "    -fx-padding: 5px;");
+                        + "    -fx-padding: 5px;";
+                n.setStyle(s);
             }
         }
 

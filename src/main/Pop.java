@@ -1,3 +1,5 @@
+package main;
+
 import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.IntStream;
@@ -8,6 +10,8 @@ public class Pop {
     int[][] customerOrder;
     // length of startingDepots
     int vehicles;
+    private final int capacityPenalty = 30; //fitness penalty for too high demand in a route
+    boolean valid;
 
 
     double fitness = Float.MAX_VALUE;
@@ -59,6 +63,7 @@ public class Pop {
 
         fitness = 0;
         int demand = 0;
+        valid = true;
         for(int i = 0; i<vehicles;i++){
             int sd = bean.nearestDepot[customerOrder[i][0]]; //starting depot
             demand += bean.service_demand[customerOrder[i][0]]; //handle the first customer
@@ -71,7 +76,8 @@ public class Pop {
             }
 
             if(demand>bean.vehicle_load[sd]){ //invalid solution if demand exceeds capacity
-                fitness = Float.MAX_VALUE;
+                fitness += demand*capacityPenalty;
+                valid = false;
                 return;
             }
 
@@ -121,7 +127,7 @@ public class Pop {
     }
 
     public String toString() {
-        String s = "Fitness: " + fitness + "  Vehicles: " + vehicles + "  Genotype:\n";
+        String s = "Fitness: " + fitness + "  Vehicles: " + vehicles +"   Valid: "+valid+ "  Genotype:\n";
         for (int[] ints : customerOrder) {
             s += Arrays.toString(ints)+"\n";
         }

@@ -1,0 +1,20 @@
+package main;
+
+import javafx.application.Application;
+import javafx.stage.Stage;
+
+public class Main extends Application {
+    @Override
+    public void start(Stage stage) {
+        new Start().start(stage);
+        //TODO threading
+        //TODO cheeck not too many from same depot
+    }
+
+    public static void main(String[] args) {
+        launch();
+    }
+
+
+
+}

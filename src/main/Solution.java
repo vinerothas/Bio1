@@ -1,3 +1,5 @@
+package main;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,12 +41,14 @@ public class Solution {
         }
 
         pop.calculateRouteValues(bean,this);
+        if (!pop.valid){
+            System.out.println("INVALID POP USED AS SOLUTION:\n"+pop);
+        }
     }
 
 
     public void parse(String filename){
-        ClassLoader classLoader = getClass().getClassLoader();
-        File file = new File(classLoader.getResource(filename).getFile());
+        File file = new File(getClass().getResource(filename).getFile());
 
         try {
             Scanner scanner = new Scanner(file);
