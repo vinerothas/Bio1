@@ -15,10 +15,11 @@ public class ScatterPlot extends Application {
     public void start(Stage stage) {
         Parser parser = new Parser();
         Bean bean = new Bean();
-        parser.parseToBean("resources/p01", bean);
+        parser.parseToBean("resources/data/p08", bean);
         bean.calculateNearestDepot();
-        bean.printBean();
-        GA ga = new GA(bean);
+        bean.calculateDist();
+        //bean.printBean();
+        GA ga = new GA(bean,2000);
 
         stage.setTitle("Scatter Chart Sample");
         final NumberAxis xAxis = new NumberAxis(bean.min_x - 10, bean.max_x + 10, 1);

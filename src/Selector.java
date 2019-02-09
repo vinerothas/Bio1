@@ -4,18 +4,22 @@ import java.util.List;
 
 public class Selector {
 
-    public static Pop[] select(int sel, Pop[] children, Pop[] parents){
+    public static Pop[] select(Pop[] children, Pop[] parents){
+        int sel = 2;
         if(sel==0){
-            return selection_elitist5050(children, parents);
+            return elitist5050(children, parents);
         }else if(sel==1){
-            return selectionFullReplacement(children, parents);
+            //seems useless
+            return fullReplacement(children, parents);
         }else if(sel==2){
-            return selection_elitist10percent(children, parents);
+            return elitist10percent(children, parents);
+        }else if(sel==3){
+            return twoBest(children, parents);
         }
         return children;
     }
 
-    public static Pop[] selection_elitist5050(Pop[] children, Pop[] parents){
+    public static Pop[] elitist5050(Pop[] children, Pop[] parents){
         Pop[] nextGen = new Pop[parents.length];
         for(int i = 0; i<parents.length/2;i++){
             nextGen[i*2] = parents[i];
@@ -24,12 +28,12 @@ public class Selector {
         return nextGen;
     }
 
-    public static Pop[] selectionFullReplacement(Pop[] children, Pop[] parents){
+    public static Pop[] fullReplacement(Pop[] children, Pop[] parents){
         return children;
     }
 
     //take the 10% best pops, rest is random from both generations
-    public static Pop[] selection_elitist10percent(Pop[] children, Pop[] parents){
+    public static Pop[] elitist10percent(Pop[] children, Pop[] parents){
         Pop[] nextGen = new Pop[parents.length];
         for(int i = 0; i<parents.length/20;i++){
             nextGen[i*2] = parents[i];
@@ -41,6 +45,16 @@ public class Selector {
         Collections.shuffle(list);
         for(int i = parents.length/10; i<parents.length;i++){
             nextGen[i] = list.get(i);
+        }
+        return nextGen;
+    }
+
+    public static Pop[] twoBest(Pop[] children, Pop[] parents){
+        Pop[] nextGen = new Pop[parents.length];
+        nextGen[0] = parents[0];
+        nextGen[1] = children[0];
+        for(int i = 1; i<children.length;i++){
+            nextGen[i] = children[i];
         }
         return nextGen;
     }

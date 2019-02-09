@@ -26,17 +26,21 @@ public class Bean {
     public int[] nearestDepot; //the id of the nearest depot for each customer
     public int totalDemand = 0;
     public int minVehicles; // minimum number of vehicles to satisfy the demand
-    public float[][] customerDist; // distance between each customer
-    public float[][] depotCustomerDist; // distance between every depot-customer combination
+    public double[][] customerDist; // distance between each customer
+    public double[][] depotCustomerDist; // distance between every depot-customer combination
+
+    public Bean(){
+
+    }
 
     public void calculateNearestDepot() {
         nearestDepot = new int[customers];
         for (int i = 0; i < customers; i++) {
             int nearest = -1;
-            float lowestDistance = Float.MAX_VALUE;
+            double lowestDistance = Float.MAX_VALUE;
             for(int j = 0; j<depots;j++){
                 //Euclidean distance
-                float dist = Util.edist(depot_x[j],depot_y[j],customer_x[i],customer_y[i]);
+                double dist = Util.edist(depot_x[j],depot_y[j],customer_x[i],customer_y[i]);
                 if (dist < lowestDistance){
                     lowestDistance = dist;
                     nearest = j;
@@ -47,14 +51,14 @@ public class Bean {
     }
 
     public void calculateDist(){
-        customerDist = new float[customers][customers];
+        customerDist = new double[customers][customers];
         for(int i = 0; i<customers;i++){
             for(int j = 0; j<customers;j++){
                 customerDist[i][j] = Util.edist(customer_x[i],customer_y[i],customer_x[j],customer_y[j]);
             }
         }
 
-        depotCustomerDist  = new float[depots][customers];
+        depotCustomerDist  = new double[depots][customers];
         for(int i = 0; i<depots;i++){
             for(int j = 0; j<customers;j++){
                 depotCustomerDist[i][j] = Util.edist(depot_x[i],depot_y[i],customer_x[j],customer_y[j]);
@@ -63,17 +67,26 @@ public class Bean {
     }
 
     public void printBean() {
-        System.out.println(vehicles);
-        System.out.println(customers);
-        System.out.println(depots);
+        System.out.println("vehicles per depot: "+vehicles);
+        System.out.println("number of customers: "+customers);
+        System.out.println("number of depots: "+depots);
+        System.out.println("Max vehicle route duration per depot:");
         printArray(vehicle_duration);
+        System.out.println("Max vehicle load per depot:");
         printArray(vehicle_load);
+        System.out.println("x-coordinates of each customer:");
         printArray(customer_x);
+        System.out.println("y-coordinates of each customer:");
         printArray(customer_y);
+        System.out.println("service duration of each customer:");
         printArray(service_duration);
+        System.out.println("service demand of each customer:");
         printArray(service_demand);
+        System.out.println("x-coordinates of each depot:");
         printArray(depot_x);
+        System.out.println("y-coordinates of each depot:");
         printArray(depot_y);
+        System.out.println("nearest depot for each customer:");
         printArray(nearestDepot);
         System.out.println("Customer to customer distances:");
         for(int i = 0; i< customers;i++){
@@ -83,6 +96,8 @@ public class Bean {
         for(int i = 0; i< depots;i++){
             System.out.println(Arrays.toString(depotCustomerDist[i]));
         }
+        System.out.println("Total demand: "+totalDemand);
+        System.out.println("Minimum number of vehicles: "+minVehicles);
     }
 
     private static void printArray(int[] anArray) {

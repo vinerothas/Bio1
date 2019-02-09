@@ -10,7 +10,7 @@ public class Pop {
     int vehicles;
 
 
-    float fitness = Float.MAX_VALUE;
+    double fitness = Float.MAX_VALUE;
 
     // Initialize a random pop
     public Pop(Random r, Bean bean) {
@@ -53,14 +53,16 @@ public class Pop {
         }
     }
 
-    // SJEKKER IKKE OM FOR MANGE BILER FRA SAMME DEPOT
+    // TODO SJEKKER IKKE OM FOR MANGE BILER FRA SAMME DEPOT
     public void calculateFitness(Bean bean) {
+        //double[][] distances = new double[customerOrder.length][];
+
         fitness = 0;
         int demand = 0;
         for(int i = 0; i<vehicles;i++){
-
             int sd = bean.nearestDepot[customerOrder[i][0]]; //starting depot
             demand += bean.service_demand[customerOrder[i][0]]; //handle the first customer
+            //TODO change to startDepot if representation changed
             fitness += bean.depotCustomerDist[sd][customerOrder[i][0]];
 
             for(int j = 1;j<customerOrder[i].length;j++){ //handle the rest of the customers for the current vehicle
@@ -73,9 +75,47 @@ public class Pop {
                 return;
             }
 
-            int lc = customerOrder[i].length-1; //last customer
-            fitness += bean.depotCustomerDist[bean.nearestDepot[lc]][customerOrder[i][lc]]; //return to nearest depot
+            int lci = customerOrder[i].length-1; //last customer order index
+            int lc = customerOrder[i][lci]; //last customer
+            fitness += bean.depotCustomerDist[bean.nearestDepot[lc]][lc]; //return to nearest depot
             demand = 0;
+        }
+
+    }
+
+    //sets routeDuration and vehicleLoad for a solution
+    public void calculateRouteValues(Bean bean, Solution solution) {
+        double[][] distances = new double[vehicles][];
+        solution.routeDuration = new double[vehicles];
+        solution.vehicleLoad = new int[vehicles];
+        int[] demand = new int[vehicles];
+        for(int i = 0; i<vehicles;i++){
+            distances[i] = new double[customerOrder[i].length+1];
+            //TODO change to startDepot if representation changed
+            int sd = bean.nearestDepot[customerOrder[i][0]]; //starting depot
+            demand[i] += bean.service_demand[customerOrder[i][0]];
+            //System.out.println("Nearest depot first customer route "+i+": "+sd);
+            distances[i][0] = bean.depotCustomerDist[sd][customerOrder[i][0]];
+
+            for(int j = 1;j<customerOrder[i].length;j++){ //handle the rest of the customers for the current vehicle
+                demand[i] += bean.service_demand[customerOrder[i][j]];
+                distances[i][j] = bean.customerDist[customerOrder[i][j-1]][customerOrder[i][j]];
+            }
+            int lci = customerOrder[i].length-1; //last customer order index
+            int lc = customerOrder[i][lci]; //last customer
+            distances[i][customerOrder[i].length] = bean.depotCustomerDist[bean.nearestDepot[lc]][lc];
+            solution.vehicleLoad[i] = demand[i];
+            //System.out.println("Nearest depot last customer route "+i+":  "+bean.nearestDepot[lc]);
+        }
+        for (int i = 0; i < distances.length; i++) {
+            //System.out.println(Arrays.toString(distances[i]));
+            double sum = 0;
+            for (int j = 0; j < distances[i].length ; j++) {
+                sum += distances[i][j];
+
+            }
+            solution.routeDuration[i] = sum;
+            //System.out.println(sum);
         }
 
     }

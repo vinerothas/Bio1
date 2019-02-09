@@ -22,8 +22,10 @@ public class Mutator {
     public static void MutateM(Pop pop, Random r){
         int v1 = r.nextInt(pop.vehicles);
         int v2 = r.nextInt(pop.vehicles);
+        int tries = 0;
         while(v1==v2 ||  pop.customerOrder[v1].length == 1){
             v1 = r.nextInt(pop.vehicles);
+            if (tries++>pop.vehicles) return; //lazy abort
         }
         int rl1 = pop.customerOrder[v1].length; // route length
         int rl2 = pop.customerOrder[v2].length;
@@ -55,17 +57,85 @@ public class Mutator {
         pop.customerOrder[v2] = nr2;
     }
 
-
-    public static void MutateV(Pop pop, Random r, Bean bean){
-        boolean positive = r.nextBoolean();
-        if(positive){
-            if(pop.vehicles != bean.totalVehicles){
-                pop.vehicles++;
-            }
-        }else{
-            if(pop.vehicles != bean.minVehicles){
-                pop.vehicles--;
-            }
+    // split a route into two routes - add a vehicle
+    public static void MutateA(Pop pop, Random r, Bean bean){
+        if(pop.vehicles==bean.totalVehicles){
+            return;
         }
+        int v = r.nextInt(pop.vehicles);
+        int tries = 0;
+        while(pop.customerOrder[v].length==1){
+            v = r.nextInt(pop.vehicles);
+            if (tries++>pop.vehicles) return; //lazy abort
+        }
+        int s = r.nextInt(pop.customerOrder[v].length-1); //last index of first route
+        int[] r1 = new int[s+1];
+        int[] r2 = new int[pop.customerOrder[v].length-s-1];
+        int i;
+        for (i = 0; i < s+1; i++) {
+            r1[i] = pop.customerOrder[v][i];
+        }
+        for (i = s+1; i < pop.customerOrder[v].length; i++) {
+            r2[i-s-1] = pop.customerOrder[v][i];
+        }
+
+        int[][] co = new int[pop.vehicles+1][];
+        for ( i = 0; i < v; i++) {
+            co[i] = pop.customerOrder[i];
+        }
+        co[i] = r1;
+        for ( i = v+1; i < pop.vehicles; i++) {
+            co[i] = pop.customerOrder[i];
+        }
+        co[i] = r2;
+        pop.customerOrder = co;
+        pop.vehicles++;
+    }
+
+    // concatenate two routes into one route - remove a vehicle
+    public static void MutateR(Pop pop, Random r, Bean bean){
+        if(pop.vehicles==bean.minVehicles){
+            return;
+        }
+        int v1 = r.nextInt(pop.vehicles);
+        int v2 = r.nextInt(pop.vehicles);
+        int tries = 0;
+        while(v1==v2 ||  pop.customerOrder[v1].length == 1){
+            v1 = r.nextInt(pop.vehicles);
+            if (tries++>pop.vehicles) return; //lazy abort
+        }
+        //TODO calculate current capacity here to merge smaller routes???
+
+        int vl1 = pop.customerOrder[v1].length;
+        int vl2 = pop.customerOrder[v2].length;
+
+        int[] nr = new int[vl1+vl2]; //new route
+        int i;
+        for (i = 0; i < vl1; i++) {
+            nr[i] = pop.customerOrder[v1][i];
+        }
+        for (i = 0; i < pop.customerOrder[v2].length; i++) {
+            nr[vl1+i] = pop.customerOrder[v2][i];
+        }
+
+        if(v1>v2){
+            int a = v1;
+            v1 = v2;
+            v2 = a;
+        }
+        int[][] co = new int[pop.vehicles-1][];
+        for ( i = 0; i < v1; i++) {
+            co[i] = pop.customerOrder[i];
+        }
+        co[i] = nr;
+        for ( i = v1+1; i < v2; i++) {
+            co[i] = pop.customerOrder[i];
+        }
+        for ( i = v2+1; i < pop.vehicles; i++) {
+            co[i-1] = pop.customerOrder[i];
+        }
+
+        pop.customerOrder = co;
+        pop.vehicles--;
     }
 }

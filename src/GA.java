@@ -3,17 +3,20 @@ import java.util.*;
 public class GA {
 
     Pop[] population;
-    int popSize = 300;
-    float mutationRateM = 1;
-    float mutationRateS = 1;
-    float crossoverRate;
+    int popSize;
+    double mutationRateM = 1;
+    double mutationRateS = 1;
+    double mutationRateA = 0.07;
+    double mutationRateR = 0.1;
+    double crossoverRate;
     Bean bean;
     //enum mutation type
     //enum crossover type
     Random r = new Random(System.currentTimeMillis());
 
-    public GA(Bean bean) {
+    public GA(Bean bean, int pops) {
         this.bean = bean;
+        this.popSize = pops;
         population = new Pop[popSize];
 
         for (int i = 0; i < popSize; i++) {
@@ -31,21 +34,25 @@ public class GA {
             float chance = r.nextFloat();
             if(chance<= mutationRateM){
                 Mutator.MutateM(children[i],r);
-                Mutator.MutateM(children[i],r);
-                Mutator.MutateM(children[i],r);
             }
             chance = r.nextFloat();
             if(chance<= mutationRateS){
                 Mutator.MutateS(children[i],r);
-                Mutator.MutateS(children[i],r);
-                Mutator.MutateS(children[i],r);
+            }
+            chance = r.nextFloat();
+            if(chance<= mutationRateA){
+                Mutator.MutateA(children[i],r,bean);
+            }
+            chance = r.nextFloat();
+            if(chance<= mutationRateR){
+                Mutator.MutateR(children[i],r,bean);
             }
             children[i].calculateFitness(bean);
         }
         Arrays.sort(children, new SortPop());
 
         int sel = 0;
-        population = Selector.select(sel,children,population);
+        population = Selector.select(children,population);
         Arrays.sort(population, new SortPop());
     }
 

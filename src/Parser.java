@@ -7,28 +7,6 @@ public class Parser {
 
     private ClassLoader classLoader = getClass().getClassLoader();
 
-    public Parser() {
-
-
-    }
-
-    // TODO remove
-    public String parse(String filename) {
-        StringBuilder result = new StringBuilder("");
-
-        File file = new File(classLoader.getResource(filename).getFile());
-
-        try (Scanner scanner = new Scanner(file)) {
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                result.append(line).append("\n");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return result.toString();
-    }
-
     public void parseToBean(String filename, Bean bean) {
         File file = new File(classLoader.getResource(filename).getFile());
 
