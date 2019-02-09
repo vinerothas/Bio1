@@ -13,10 +13,11 @@ public class GAthread implements Runnable {
     CountDownLatch latch;
     Random r = new Random(System.currentTimeMillis());
 
-    double mutationRateM = 0.8;
-    double mutationRateS = 0.8;
-    double mutationRateA = 0.07;
-    double mutationRateR = 0.04;
+    static double mutationRateM = 0.8;
+    static double mutationRateS = 0.8;
+    static double mutationRateA = 0.07;
+    static double mutationRateR = 0.04;
+    static double crossoverRate = 0.001;
 
     public GAthread(Bean bean, Pop[] population, Pop[] children, int startIndex, int endIndex, CountDownLatch latch){
         this.bean = bean;
@@ -30,8 +31,17 @@ public class GAthread implements Runnable {
     @Override
     public void run() {
         for(int i = startIndex; i<endIndex;i++){
-            children[i] = new Pop(population[i]);
-            mutate(children[i]);
+            float chance = r.nextFloat();
+            if(chance<= crossoverRate){
+                if(i==0) {
+                    children[i] = Crosser.cross(population[i],population[i+1],bean,r);
+                }else{
+                    children[i] = Crosser.cross(population[i],population[i-1],bean,r);
+                }
+            }else{
+                children[i] = new Pop(population[i]);
+                mutate(children[i]);
+            }
             children[i].calculateFitness(bean);
         }
         latch.countDown();

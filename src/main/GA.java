@@ -68,6 +68,8 @@ public class GA {
         }
         //time += System.currentTimeMillis()-timeBefore;
 
+
+
         Arrays.sort(children, new SortPop());
         population = Selector.select(children,population);
         Arrays.sort(population, new SortPop());

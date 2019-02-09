@@ -57,6 +57,12 @@ public class Pop {
         }
     }
 
+    // Designer baby
+    public Pop(int[][] customerOrder) {
+        this.customerOrder = customerOrder;
+        this.vehicles = customerOrder.length;
+    }
+
     // TODO SJEKKER IKKE OM FOR MANGE BILER FRA SAMME DEPOT
     public void calculateFitness(Bean bean) {
         //double[][] distances = new double[customerOrder.length][];
@@ -64,8 +70,10 @@ public class Pop {
         fitness = 0;
         int demand = 0;
         valid = true;
+        int[] startDepot = new int[bean.depots];
         for(int i = 0; i<vehicles;i++){
             int sd = bean.nearestDepot[customerOrder[i][0]]; //starting depot
+            startDepot[sd] += 1;
             demand += bean.service_demand[customerOrder[i][0]]; //handle the first customer
             //TODO change to startDepot if representation changed
             fitness += bean.depotCustomerDist[sd][customerOrder[i][0]];
@@ -85,6 +93,15 @@ public class Pop {
             int lc = customerOrder[i][lci]; //last customer
             fitness += bean.depotCustomerDist[bean.nearestDepot[lc]][lc]; //return to nearest depot
             demand = 0;
+        }
+        if(valid){
+            for (int i = 0; i < startDepot.length ; i++) {
+                if(startDepot[i]>bean.vehicles){
+                    valid = false;
+                    fitness+=20000;
+                    break;
+                }
+            }
         }
 
     }

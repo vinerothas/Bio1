@@ -7,7 +7,7 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) {
         new Start().start(stage);
-        //TODO cheeck not too many from same depot
+        //TODO check not too many from same depot
     }
 
     public static void main(String[] args) {
