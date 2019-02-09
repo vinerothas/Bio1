@@ -10,7 +10,7 @@ public class Pop {
     int[][] customerOrder;
     // length of startingDepots
     int vehicles;
-    private final int capacityPenalty = 30; //fitness penalty for too high demand in a route
+    private final int capacityPenalty = 1000; //fitness penalty for too high demand in a route
     boolean valid;
 
 

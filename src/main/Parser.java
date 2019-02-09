@@ -39,6 +39,7 @@ public class Parser {
             bean.customer_y = new int[bean.customers];
             bean.service_duration = new int[bean.customers];
             bean.service_demand = new int[bean.customers];
+            bean.totalDemand = 0;
 
             for (int i = 0; i < bean.customers; i++) {
                 line = scanner.nextLine();

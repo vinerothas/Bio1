@@ -21,7 +21,7 @@ public class ScatterPlot extends Application {
         bean.calculateNearestDepot();
         bean.calculateDist();
         //bean.printBean();
-        GA ga = new GA(bean,2000);
+        GA ga = new GA(bean,2000, 4);
 
         stage.setTitle("Scatter Chart Sample");
         final NumberAxis xAxis = new NumberAxis(bean.min_x - 10, bean.max_x + 10, 1);

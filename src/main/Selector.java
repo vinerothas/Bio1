@@ -7,7 +7,7 @@ import java.util.List;
 public class Selector {
 
     public static Pop[] select(Pop[] children, Pop[] parents){
-        int sel = 2;
+        int sel = 4;
         if(sel==0){
             return elitist5050(children, parents);
         }else if(sel==1){
@@ -17,6 +17,8 @@ public class Selector {
             return elitist10percent(children, parents);
         }else if(sel==3){
             return twoBest(children, parents);
+        }else if(sel==4){
+            return elitist5percent(children, parents);
         }
         return children;
     }
@@ -46,6 +48,23 @@ public class Selector {
         List<Pop> list = Arrays.asList(newArray);
         Collections.shuffle(list);
         for(int i = parents.length/10; i<parents.length;i++){
+            nextGen[i] = list.get(i);
+        }
+        return nextGen;
+    }
+
+    //take the 5% best pops, rest is random from both generations
+    public static Pop[] elitist5percent(Pop[] children, Pop[] parents){
+        Pop[] nextGen = new Pop[parents.length];
+        for(int i = 0; i<parents.length/40;i++){
+            nextGen[i*2] = parents[i];
+            nextGen[i*2+1] = children[i];
+        }
+        Pop[] newArray = Util.concatenate(Arrays.copyOfRange(parents, parents.length/20, parents.length),
+                Arrays.copyOfRange(children, children.length/20, children.length));
+        List<Pop> list = Arrays.asList(newArray);
+        Collections.shuffle(list);
+        for(int i = parents.length/20; i<parents.length;i++){
             nextGen[i] = list.get(i);
         }
         return nextGen;

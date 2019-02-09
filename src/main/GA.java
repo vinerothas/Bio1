@@ -1,6 +1,12 @@
 package main;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class GA {
 
@@ -11,14 +17,19 @@ public class GA {
     double mutationRateA = 0.07;
     double mutationRateR = 0.04;
     double crossoverRate;
+    int threads;
+    long time = 0;
+    ThreadPoolExecutor executor;
+
     Bean bean;
     //enum mutation type
     //enum crossover type
     Random r = new Random(System.currentTimeMillis());
 
-    public GA(Bean bean, int pops) {
+    public GA(Bean bean, int pops, int threads) {
         this.bean = bean;
         this.popSize = pops;
+        this.threads = threads;
         population = new Pop[popSize];
 
         for (int i = 0; i < popSize; i++) {
@@ -27,23 +38,37 @@ public class GA {
         }
         Arrays.sort(population, new SortPop());
         //System.out.println(Arrays.toString(population));
+
+        executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+        executor.setMaximumPoolSize(threads);
+        executor.setCorePoolSize(threads);
+        executor.setKeepAliveTime(60, TimeUnit.SECONDS);
     }
 
     public void run_generation() {
-        Pop[] children = new Pop[population.length];
-        for(int i = 0; i<population.length;i++){
-            children[i] = new Pop(population[i]);
-            mutate(children[i]);
-            children[i].calculateFitness(bean);
+        Pop[] children = new Pop[popSize];
+
+        //long timeBefore = System.currentTimeMillis();
+        CountDownLatch latch = new CountDownLatch(threads);
+        for (int i = 0; i < threads; i++) {
+            int startIndex = popSize/threads*i;
+            int endIndex = popSize/threads*(i+1);
+            GAthread thread = new GAthread(bean,population,children, startIndex,endIndex,latch);
+            executor.submit(() -> {
+                thread.run();
+                return null;
+            });
         }
+
+        try {
+            latch.await();
+        }catch (InterruptedException e){
+            e.printStackTrace();
+            return; // I guess I'll die \_(0_o)_/
+        }
+        //time += System.currentTimeMillis()-timeBefore;
+
         Arrays.sort(children, new SortPop());
-
-//        mutationRateM -= mutationRateM*0.001;
-//        mutationRateS -= mutationRateS*0.001;
-//        mutationRateA -= mutationRateA*0.001;
-//        mutationRateR -= mutationRateR*0.001;
-
-        int sel = 0;
         population = Selector.select(children,population);
         Arrays.sort(population, new SortPop());
     }
