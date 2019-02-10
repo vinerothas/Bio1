@@ -1,6 +1,5 @@
 package main;
 
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
@@ -18,6 +17,7 @@ public class GA {
     Bean bean;
     Random r = new Random(System.currentTimeMillis());
     Selector selector;
+    GAthread[] gathreads;
 
     public GA(Bean bean, int pops, int threads) {
         this.bean = bean;
@@ -30,13 +30,20 @@ public class GA {
             population[i] = new Pop(r, bean);
             population[i].calculateFitness(bean);
         }
-        Arrays.sort(population, new SortPop());
+        //Arrays.sort(population, new SortPop());
         //System.out.println(Arrays.toString(population));
 
         executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
         executor.setMaximumPoolSize(threads);
         executor.setCorePoolSize(threads);
         executor.setKeepAliveTime(60, TimeUnit.SECONDS);
+
+        gathreads = new GAthread[threads];
+        for (int i = 0; i < threads; i++) {
+            int startIndex = popSize/threads*i;
+            int endIndex = popSize/threads*(i+1);
+            gathreads[i] = new GAthread(bean,population,null, startIndex,endIndex,null);
+        }
     }
 
     public void run_generation() {
@@ -45,11 +52,12 @@ public class GA {
         //long timeBefore = System.currentTimeMillis();
         CountDownLatch latch = new CountDownLatch(threads);
         for (int i = 0; i < threads; i++) {
-            int startIndex = popSize/threads*i;
-            int endIndex = popSize/threads*(i+1);
-            GAthread thread = new GAthread(bean,population,children, startIndex,endIndex,latch);
+            gathreads[i].population = population;
+            gathreads[i].children = children;
+            gathreads[i].latch = latch;
+            GAthread gat = gathreads[i];
             executor.submit(() -> {
-                thread.run();
+                gat.run();
                 return null;
             });
         }
@@ -62,9 +70,9 @@ public class GA {
         }
         //time += System.currentTimeMillis()-timeBefore;
 
-        Arrays.sort(children, new SortPop());
+        //Arrays.sort(children, new SortPop());
         population = selector.select(children,population);
-        Arrays.sort(population, new SortPop());
+        //Arrays.sort(population, new SortPop());
     }
 
     class SortPop implements Comparator<Pop> {

@@ -8,7 +8,6 @@ public class Main extends Application {
     public void start(Stage stage) {
         new Start().start(stage);
         //TODO different selection
-        //TODO different representation
         //TODO stop button
 
     }

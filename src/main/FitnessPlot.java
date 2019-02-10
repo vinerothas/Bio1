@@ -29,7 +29,7 @@ public class FitnessPlot {
             XYChart.Series series = new XYChart.Series();
             series.setName("Fitness "+i);
             int increment = maxFitness[i].length/500;
-            for (int j = 0; j < maxFitness[i].length; j+=increment) {
+            for (int j = 500; j < maxFitness[i].length; j+=increment) {
                 series.getData().add(new XYChart.Data(j, maxFitness[i][j]));
             }
             lineChart.getData().add(series);

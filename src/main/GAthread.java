@@ -30,15 +30,19 @@ public class GAthread implements Runnable {
 
     @Override
     public void run() {
-        for(int i = startIndex; i<endIndex;i++){
-            float chance = r.nextFloat();
-            if(chance<= Param.crossoverRate){
-                children[i] = Crosser.cross(population[i],population[r.nextInt(population.length)],bean,r);
-            }else{
-                children[i] = new Pop(population[i]);
-                mutate(children[i]);
+        try {
+            for (int i = startIndex; i < endIndex; i++) {
+                float chance = r.nextFloat();
+                if (chance <= Param.crossoverRate) {
+                    children[i] = Crosser.crossPMX(population[i], population[r.nextInt(population.length)], bean, r);
+                } else {
+                    children[i] = new Pop(population[i]);
+                    mutate(children[i]);
+                }
+                children[i].calculateFitness(bean);
             }
-            children[i].calculateFitness(bean);
+        }catch (Exception e){
+            e.printStackTrace();
         }
         latch.countDown();
     }
@@ -46,24 +50,16 @@ public class GAthread implements Runnable {
     public void mutate(Pop child){
 
         float chance = r.nextFloat();
-        if(chance<= Param.mutationRateM) {
-            Mutator.MutateM(child, r);
+        if(chance<=Param.mutationRate){
+            if(chance<= Param.mutationRateM) {
+                Mutator.MutateM(child, r);
+            }else if(chance>= 1-Param.mutationRateC){
+                Mutator.MutateC(child,r,bean);
+            }else{
+                Mutator.MutateS(child,r);
+            }
         }
 
-        chance = r.nextFloat();
-        if(chance<= Param.mutationRateS){
-            Mutator.MutateS(child,r);
-        }
-
-        chance = r.nextFloat();
-        if(chance<= Param.mutationRateA){
-            Mutator.MutateA(child,r,bean);
-        }
-
-        chance = r.nextFloat();
-        if(chance<= Param.mutationRateR){
-            Mutator.MutateR(child,r,bean);
-        }
     }
 
 }

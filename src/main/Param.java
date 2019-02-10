@@ -2,20 +2,20 @@ package main;
 
 public class Param {
 
-    static int gens = 30000;
-    static int threads = 6;
-    static int pops = threads*1000; //keep pops divisible by number of threads
+    static int gens = 50000;
+    static int threads = 7;
+    static int pops = threads*100; //keep pops divisible by number of threads
 
-    static double elitismPercent = 10; //ACTUALLY PERCENT of how much of best population is guaranteed to survive
+    static double elitismPercent = 20; //ACTUALLY PERCENT of how much of best population is guaranteed to survive
 
-    static double mutationRateM = 0.6;
-    static double mutationRateS = 0.6;
-    static double mutationRateA = 0.2;
-    static double mutationRateR = 0.2;
+    static double mutationRate = 1;
+    static double mutationRateM = 0.4;
+    static double mutationRateS = 0.3;
+    static double mutationRateC = 0.3;
     static double crossoverRate = 0.1;
 
     static int tests = 10;
-    static int test = 23;
+    static int test = 19;
 
     static boolean allTestsOnce = false;
     static boolean allTestsMany = false;

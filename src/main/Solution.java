@@ -22,7 +22,7 @@ public class Solution {
 
     public Solution(Bean bean, Pop pop){
         totalLength = pop.fitness;
-        routes = pop.vehicles;
+        routes = pop.vehicles.length;
 
         // TODO change to pop.startDepot if representation is changed
         startDepot = new int[routes];
@@ -31,15 +31,20 @@ public class Solution {
         int[] vehiclesUsed = new int[bean.depots];
         vehicleNumber = new int[routes];
         for (int i = 0; i < routes; i++) {
-            startDepot[i] = bean.nearestDepot[pop.customerOrder[i][0]]+1;
+            startDepot[i] = bean.nearestDepot[pop.customerOrder[pop.vehicles[i]]]+1;
             vehicleNumber[i] = ++vehiclesUsed[startDepot[i]-1];
-            endDepot[i] = bean.nearestDepot[pop.customerOrder[i][pop.customerOrder[i].length-1]]+1;
-            customerOrder[i] = new int[pop.customerOrder[i].length];
+            if(i==routes-1) {
+                endDepot[i] = bean.nearestDepot[pop.customerOrder[pop.customerOrder.length-1]] + 1;
+                customerOrder[i] = new int[pop.customerOrder.length-pop.vehicles[i]];
+            }else{
+                endDepot[i] = bean.nearestDepot[pop.customerOrder[pop.vehicles[i+1]-1]] + 1;
+                customerOrder[i] = new int[pop.vehicles[i+1]-pop.vehicles[i]];
+            }
+
             for (int j = 0; j < customerOrder[i].length; j++) {
-                customerOrder[i][j]=pop.customerOrder[i][j]+1;
+                customerOrder[i][j]=pop.customerOrder[pop.vehicles[i]+j]+1;
             }
         }
-
         pop.calculateRouteValues(bean,this);
         if (!pop.valid){
             System.out.println("INVALID POP USED AS SOLUTION:\n"+pop);

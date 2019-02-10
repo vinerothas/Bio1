@@ -1,153 +1,87 @@
 package main;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 public class Crosser {
 
     public static Pop cross(Pop mom, Pop dad, Bean bean, Random r){
-        boolean[] served = new boolean[bean.customers];
-        ArrayList<int[]> list = new ArrayList<int[]>();
+        return new Pop(mom.customerOrder, dad.vehicles);
+    }
 
-        Pop a;
-        if(mom.vehicles>dad.vehicles){//dad's bigger
-            a = mom;
-            mom = dad;
-            dad = a;
+
+    public static Pop crossPMX(Pop mom, Pop dad, Bean bean, Random r){
+        int [] customerOrder = pmx(mom.customerOrder,dad.customerOrder,r);
+        return new Pop(customerOrder, mom.vehicles);
+    }
+
+    /*  1.  Choose  two crossover  points  at  random,  and  copy the  segment  between
+        them from the first  parent (PI) into the first  offspring.
+        2.  Starting from  the first  crossover point look for  elements in that segment
+        of the second parent (P2)  that have not been copied.
+        3.  For each of these (say i), look in the offspring to see what element (say j)
+        has been copied in its place from  PI.
+        4.  Place i into the position occupied by j  in P2, since we know that we will not
+        be putting j  there (as we  already have it in our string).
+        5.  If the place occupied by j  in P2 has already been filled in the offspring by
+        an element k,  put i  in the position occupied by k in P2.
+        5.  Having dealt with the elements from the crossover segment, the rest of the
+        offspring can be filled from P2, and the second child is created analogously
+        with the parental roles reversed. */
+    private static int[] pmx(int[] p1, int[] p2, Random r){
+        int[] c = new int[p1.length];
+        Arrays.fill(c, -1);
+        int cp1 = r.nextInt(p1.length);
+        int cp2 = r.nextInt(p1.length);
+        while(cp1==cp2){
+            cp2 = r.nextInt(p1.length);
         }
-
-        // add routes present in both parents, not necessarily an optimal property
-//        for (int i = 0; i < mom.vehicles; i++) {
-//            for (int j = 0; j < dad.vehicles; j++) {
-//                if(Arrays.equals(mom.customerOrder[i],dad.customerOrder[j])){
-//                    list.add(mom.customerOrder[i]);
-//                    for (int k = 0; k < mom.customerOrder[i].length; k++) {
-//                        served[mom.customerOrder[i][k]] = true;
-//                    }
-//                    break;
-//                }
-//            }
-//        }
-
-        boolean momServe = true;
-        boolean dadServe = true;
-        int limit = mom.vehicles;
-        for (int i = 0; i < limit ; i++) { //take routes for non served customers alternating between mom and dad
-            for (int j = 0; j < mom.customerOrder[i].length; j++) {
-                if(served[mom.customerOrder[i][j]]){
-                    momServe = false;
+        if(cp2<cp1){
+            int a = cp2;
+            cp2 = cp1;
+            cp1 = a;
+        }
+        System.arraycopy(p1,cp1, c,cp1,cp2-cp1);
+        for (int k = cp1; k <cp2; k++) {
+            int i = p2[k];
+            boolean present = false;
+            for (int l = cp1; l < cp2 ; l++) {
+                if(c[l]==i){
+                    present = true;
                     break;
                 }
             }
-            if(momServe){
-                list.add(mom.customerOrder[i]);
-                for (int j = 0; j < mom.customerOrder[i].length; j++) {
-                    served[mom.customerOrder[i][j]] = true;
-                }
-                a = mom;
-                mom = dad;
-                dad = a;
-                continue;
-            }
-            momServe = true;
-            for (int j = 0; j < dad.customerOrder[i].length; j++) {
-                if(served[dad.customerOrder[i][j]]){
-                    dadServe = false;
-                    break;
-                }
-            }
-            if(dadServe){
-                list.add(dad.customerOrder[i]);
-                for (int j = 0; j < dad.customerOrder[i].length; j++) {
-                    served[dad.customerOrder[i][j]] = true;
-                }
-                a = mom;
-                mom = dad;
-                dad = a;
-                continue;
-            }
-            dadServe = true;
-        }
-
-        if(mom.vehicles>dad.vehicles){
-            a = mom;
-            mom = dad;
-            dad = a;
-        }
-
-
-        for (int i = mom.vehicles; i < dad.vehicles ; i++) {
-            for (int j = 0; j < dad.customerOrder[i].length; j++) {
-                if(served[dad.customerOrder[i][j]]){
-                    dadServe = false;
-                    break;
-                }
-            }
-            if(dadServe){
-                list.add(dad.customerOrder[i]);
-                for (int j = 0; j < dad.customerOrder[i].length; j++) {
-                    served[dad.customerOrder[i][j]] = true;
-                }
-                a = mom;
-                mom = dad;
-                dad = a;
-                continue;
-            }
-            dadServe = true;
-        }
-
-        int parentVehicles = Math.round((dad.vehicles+mom.vehicles)/(float)2);
-
-        while(list.size()>parentVehicles){
-            int i = r.nextInt(list.size());
-            int j = r.nextInt(list.size());
-            while(i==j){
-                j = r.nextInt(list.size());
-            }
-            int[] a1 = list.get(i);
-            int[] a2 = list.remove(j);
-            if(i != list.size() && a1==list.get(i)){
-                list.remove(i);
-            }else{
-                list.remove(i-1);
-            }
-
-            int[] a3 = new int[a1.length+a2.length];
-            int k;
-            for (k=0; k < a1.length; k++) {
-                a3[k] = a1[k];
-            }
-            for (int l = 0; l < a2.length ; l++) {
-                a3[k+l] = a2[l];
-            }
-            list.add(a3);
-        }
-
-
-        for (int i = 0; i < served.length; i++) {
-            if(!served[i]){
-                if(list.size()==parentVehicles){
-                    int index = r.nextInt(list.size());
-                    int[] a1 = list.remove(index);
-                    int[] a2 = new int[a1.length+1];
-                    for (int j = 0; j < a1.length; j++) {
-                        a2[j] = a1[j];
-                    }
-                    a2[a1.length] = i;
-                    list.add(a2);
-                }else{
-                    list.add(new int[]{i});
-                }
-                served[i] = true;
+            if (!present){
+                int j = p1[k];
+                place(i,j,cp1,cp2,p1,p2,c);
             }
         }
-
-        int[][] customerOrder = new int[list.size()][];
-        for (int i = 0; i < customerOrder.length; i++) {
-            customerOrder[i] = list.get(i);
+        for (int i = 0; i < c.length; i++) {
+            if(c[i]==-1) c[i] = p2[i];
         }
 
-        return new Pop(customerOrder);
+        return c;
+    }
+
+    private static void place(int i, int j, int cp1, int cp2, int[] p1, int[] p2, int c[]){
+        for (int l = 0; l < cp1 ; l++) {
+            if(p2[l]==j){
+                c[l] = i;
+                return;
+            }
+        }
+        for (int l = cp1; l < cp2; l++) {
+            if(p2[l]==j){
+                place(i,p1[l],cp1,cp2,p1,p2,c);
+                return;
+            }
+        }
+        for (int l = cp2; l < c.length ; l++) {
+            if(p2[l]==j){
+                c[l] = i;
+                return;
+            }
+        }
     }
 
 }

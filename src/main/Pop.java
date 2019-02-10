@@ -4,12 +4,10 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.IntStream;
 
-public class Pop {
+public class Pop implements Comparable{
 
-    //order of customers for each vehicle
-    int[][] customerOrder;
-    // length of startingDepots
-    int vehicles;
+    int[] customerOrder;//order of customers
+    int[] vehicles; // order starting position (index) for each vehicle, constraint [i]<[i-1] and [i]=0
     boolean valid;
 
 
@@ -18,48 +16,42 @@ public class Pop {
     // Initialize a random pop
     public Pop(Random r, Bean bean) {
         int bound = bean.totalVehicles-bean.minVehicles+1;
-        vehicles = r.nextInt(bound)+bean.minVehicles ;
+        vehicles = new int[r.nextInt(bound)+bean.minVehicles];
 
         //generate a random order of customers
-        customerOrder = new int[vehicles][];
-        int[] customers = IntStream.range(0, bean.customers).toArray();
-        Util.shuffleArray(customers);
+        customerOrder = IntStream.range(0, bean.customers).toArray();
+        Util.shuffleArray(customerOrder);
 
-        int cvl = bean.customers/vehicles; //customers per vehicle, lower bound
+        int cvl = bean.customers/vehicles.length; //customers per vehicle, lower bound
         int cvh = cvl+1; //customers per vehicle, higher bound
-        int vh = bean.customers-cvl*vehicles; //number of higher bound vehicles
-        int cc = 0; //current customer to assign
+        int vh = bean.customers-cvl*vehicles.length; //number of higher bound vehicles
         for(int i = 0; i<vh;i++){ //assign customers to all higher bound vehicles
-            customerOrder[i] = new int[cvh];
-            for(int j = 0; j < cvh; j++){
-                customerOrder[i][j] = customers[cc++];
-            }
+            vehicles[i] = cvh*i;
         }
-        for(int i = vh; i<vehicles;i++){ //assign customers to all lower bound vehicles
-            customerOrder[i] = new int[cvl];
-            for(int j = 0; j < cvl; j++){
-                customerOrder[i][j] = customers[cc++];
-            }
+        for(int i = vh; i<vehicles.length;i++){ //assign customers to all lower bound vehicles
+            vehicles[i] = cvl*(i-vh)+(cvh*vh);
         }
 
     }
 
     // Clone an existing pop
     public Pop(Pop pop) {
-        this.vehicles = pop.vehicles;
-        customerOrder = new int[vehicles][];
+        vehicles = new int[pop.vehicles.length];
+        customerOrder = new int[pop.customerOrder.length];
         for(int i=0; i<pop.customerOrder.length; i++) {
-            customerOrder[i] = new int[pop.customerOrder[i].length];
-            for (int j = 0; j < pop.customerOrder[i].length; j++) {
-                customerOrder[i][j] = pop.customerOrder[i][j];
-            }
+            customerOrder[i] = pop.customerOrder[i];
+        }
+        for(int i=0; i<pop.vehicles.length; i++) {
+            vehicles[i] = pop.vehicles[i];
         }
     }
 
     // Designer baby
-    public Pop(int[][] customerOrder) {
-        this.customerOrder = customerOrder;
-        this.vehicles = customerOrder.length;
+    public Pop(int[] customerOrder, int[] vehicles) {
+        this.customerOrder = new int[customerOrder.length];
+        this.vehicles = new int[vehicles.length];
+        System.arraycopy(customerOrder,0, this.customerOrder,0,customerOrder.length);
+        System.arraycopy(vehicles,0, this.vehicles,0,vehicles.length);
     }
 
     public void calculateFitness(Bean bean) {
@@ -67,16 +59,20 @@ public class Pop {
         int demand = 0;
         valid = true;
         int[] startDepot = new int[bean.depots];
-        for(int i = 0; i<vehicles;i++){
-            int sd = bean.nearestDepot[customerOrder[i][0]]; //starting depot
+        int cc;
+        int ci;
+        for(int i = 0; i<vehicles.length-1;i++){
+            ci = vehicles[i]; //current index in customer order
+            cc = customerOrder[ci]; //current customer
+            int sd = bean.nearestDepot[cc]; //starting depot
             startDepot[sd] += 1;
-            demand += bean.service_demand[customerOrder[i][0]]; //handle the first customer
+            demand += bean.service_demand[cc]; //handle the first customer
             //TODO change to startDepot if representation changed
-            fitness += bean.depotCustomerDist[sd][customerOrder[i][0]];
+            fitness += bean.depotCustomerDist[sd][cc];
 
-            for(int j = 1;j<customerOrder[i].length;j++){ //handle the rest of the customers for the current vehicle
-                demand += bean.service_demand[customerOrder[i][j]];
-                fitness += bean.customerDist[customerOrder[i][j-1]][customerOrder[i][j]];
+            for(int j = ci+1;j<vehicles[i+1];j++){ //handle the rest of the customers for the current vehicle
+                demand += bean.service_demand[customerOrder[j]];
+                fitness += bean.customerDist[customerOrder[j-1]][customerOrder[j]];
             }
 
             if(demand>bean.vehicle_load[sd]){ //invalid solution if demand exceeds capacity
@@ -84,11 +80,33 @@ public class Pop {
                 fitness += (demand-bean.vehicle_load[sd])<< Param.capacityPenalty;
             }
 
-            int lci = customerOrder[i].length-1; //last customer order index
-            int lc = customerOrder[i][lci]; //last customer
+            int lci = vehicles[i+1]-1; //last customer order index
+            int lc = customerOrder[lci]; //last customer
             fitness += bean.depotCustomerDist[bean.nearestDepot[lc]][lc]; //return to nearest depot
             demand = 0;
         }
+
+        //last vehicle
+        ci = vehicles[vehicles.length-1]; //current index in customer order
+        cc = customerOrder[ci]; //current customer
+        int sd = bean.nearestDepot[cc]; //starting depot
+        startDepot[sd] += 1;
+        demand += bean.service_demand[cc]; //handle the first customer
+        //TODO change to startDepot if representation changed
+        fitness += bean.depotCustomerDist[sd][cc];
+
+        for(int j = ci+1;j<customerOrder.length;j++){ //handle the rest of the customers for the last vehicle
+            demand += bean.service_demand[customerOrder[j]];
+            fitness += bean.customerDist[customerOrder[j-1]][customerOrder[j]];
+        }
+
+        if(demand>bean.vehicle_load[sd]){ //invalid solution if demand exceeds capacity
+            valid = false;
+            fitness += (demand-bean.vehicle_load[sd])<< Param.capacityPenalty;
+        }
+
+        int lc = customerOrder[customerOrder.length-1]; //last customer
+        fitness += bean.depotCustomerDist[bean.nearestDepot[lc]][lc]; //return to nearest depot
 
         for (int i = 0; i < startDepot.length ; i++) {
             if(startDepot[i]>bean.vehicles){
@@ -102,63 +120,70 @@ public class Pop {
 
     //sets routeDuration and vehicleLoad for a solution
     public void calculateRouteValues(Bean bean, Solution solution) {
-        double[][] distances = new double[vehicles][];
-        solution.routeDuration = new double[vehicles];
-        solution.vehicleLoad = new int[vehicles];
-        int[] demand = new int[vehicles];
-        for(int i = 0; i<vehicles;i++){
-            distances[i] = new double[customerOrder[i].length+1];
+        double[] distances = new double[vehicles.length];
+        int[] demand = new int[vehicles.length];
+        solution.vehicleLoad = new int[vehicles.length];
+
+        int cc;
+        int ci;
+        for(int i = 0; i<vehicles.length-1;i++){
+            ci = vehicles[i]; //current index in customer order
+            cc = customerOrder[ci]; //current customer
+            int sd = bean.nearestDepot[cc]; //starting depot
+            demand[i] += bean.service_demand[cc]; //handle the first customer
             //TODO change to startDepot if representation changed
-            int sd = bean.nearestDepot[customerOrder[i][0]]; //starting depot
-            demand[i] += bean.service_demand[customerOrder[i][0]];
-            //System.out.println("Nearest depot first customer route "+i+": "+sd);
-            distances[i][0] = bean.depotCustomerDist[sd][customerOrder[i][0]];
+            distances[i] = bean.depotCustomerDist[sd][cc];
 
-            for(int j = 1;j<customerOrder[i].length;j++){ //handle the rest of the customers for the current vehicle
-                demand[i] += bean.service_demand[customerOrder[i][j]];
-                distances[i][j] = bean.customerDist[customerOrder[i][j-1]][customerOrder[i][j]];
+            for(int j = ci+1;j<vehicles[i+1];j++){ //handle the rest of the customers for the current vehicle
+                demand[i] += bean.service_demand[customerOrder[j]];
+                distances[i] += bean.customerDist[customerOrder[j-1]][customerOrder[j]];
             }
-            int lci = customerOrder[i].length-1; //last customer order index
-            int lc = customerOrder[i][lci]; //last customer
-            distances[i][customerOrder[i].length] = bean.depotCustomerDist[bean.nearestDepot[lc]][lc];
+
+            int lci = vehicles[i+1]-1; //last customer order index
+            int lc = customerOrder[lci]; //last customer
+            distances[i] += bean.depotCustomerDist[bean.nearestDepot[lc]][lc]; //return to nearest depot
             solution.vehicleLoad[i] = demand[i];
-            //System.out.println("Nearest depot last customer route "+i+":  "+bean.nearestDepot[lc]);
-        }
-        for (int i = 0; i < distances.length; i++) {
-            //System.out.println(Arrays.toString(distances[i]));
-            double sum = 0;
-            for (int j = 0; j < distances[i].length ; j++) {
-                sum += distances[i][j];
 
-            }
-            solution.routeDuration[i] = sum;
-            //System.out.println(sum);
         }
+
+        //last vehicle
+        ci = vehicles[vehicles.length-1]; //current index in customer order
+        cc = customerOrder[ci]; //current customer
+        int sd = bean.nearestDepot[cc]; //starting depot
+        solution.vehicleLoad[solution.vehicleLoad.length-1] = bean.service_demand[cc]; //handle the first customer
+        //TODO change to startDepot if representation changed
+        distances[distances.length-1] = bean.depotCustomerDist[sd][cc];
+
+        for(int j = ci+1;j<customerOrder.length;j++){ //handle the rest of the customers for the last vehicle
+            solution.vehicleLoad[solution.vehicleLoad.length-1] += bean.service_demand[customerOrder[j]];
+            distances[distances.length-1] += bean.customerDist[customerOrder[j-1]][customerOrder[j]];
+        }
+
+        int lc = customerOrder[customerOrder.length-1]; //last customer
+        distances[distances.length-1] += bean.depotCustomerDist[bean.nearestDepot[lc]][lc]; //return to nearest depot
+
+
+        solution.routeDuration = distances;
 
     }
 
     public String toString() {
-        String s = "Fitness: " + fitness + "  Vehicles: " + vehicles +"   Valid: "+valid+ "  Genotype:\n";
-        for (int[] ints : customerOrder) {
-            s += Arrays.toString(ints)+"\n";
-        }
+        String s = "Fitness: " + fitness + "  Vehicles: " + vehicles.length +"   Valid: "+valid+ "  Customer order:\n";
+        s += Arrays.toString(customerOrder)+"\n";
+        s += "Vehicles:\n"+ Arrays.toString(vehicles)+"\n";
+
         return s;
     }
 
     //p01 best pop
     public Pop(boolean check) {
-        this.vehicles = 11;
-        customerOrder = new int[vehicles][];
-        customerOrder[0] = new int[]{40, 39, 18, 41, 43};
-        customerOrder[1] = new int[]{12, 24, 13,};
-        customerOrder[2] = new int[]{3, 17, 46};
-        customerOrder[3] = new int[]{10, 31, 0, 26};
-        customerOrder[4] = new int[]{22, 6, 42, 23, 5};
-        customerOrder[5] = new int[]{47, 7, 25, 30, 27, 21};
-        customerOrder[6] = new int[]{45, 11, 4, 37,};
-        customerOrder[7] = new int[]{48, 29, 33, 8,};
-        customerOrder[8] = new int[]{9, 38, 32, 44, 14, 36, 16};
-        customerOrder[9] = new int[]{28, 1, 15, 49, 20};
-        customerOrder[10] = new int[]{19, 2, 35, 34,};
+        vehicles = new int[]{0,5,8,11,15,20,26,30,34,41,46};
+        customerOrder = new int[]{40, 39, 18, 41, 43,12, 24, 13,3, 17, 46,10, 31, 0, 26,22, 6, 42, 23, 5,47, 7, 25, 30, 27, 21,45, 11, 4, 37,48, 29, 33, 8,9, 38, 32, 44, 14, 36, 16,28, 1, 15, 49, 20,19, 2, 35, 34,};
+    }
+
+
+    @Override
+    public int compareTo(Object o) {
+        return Double.compare(this.fitness,((Pop)(o)).fitness);
     }
 }
