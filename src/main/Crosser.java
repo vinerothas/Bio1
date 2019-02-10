@@ -147,15 +147,6 @@ public class Crosser {
             customerOrder[i] = list.get(i);
         }
 
-        Pop pop = new Pop(customerOrder);
-        int customers = 0;
-        for (int i = 0; i < customerOrder.length ; i++) {
-            customers+=customerOrder[i].length;
-        }
-        if(customers<bean.customers){
-            System.out.println("wtf");
-        }
-
         return new Pop(customerOrder);
     }
 

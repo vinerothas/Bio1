@@ -10,7 +10,6 @@ public class Pop {
     int[][] customerOrder;
     // length of startingDepots
     int vehicles;
-    private final int capacityPenalty = 1000; //fitness penalty for too high demand in a route
     boolean valid;
 
 
@@ -63,10 +62,7 @@ public class Pop {
         this.vehicles = customerOrder.length;
     }
 
-    // TODO SJEKKER IKKE OM FOR MANGE BILER FRA SAMME DEPOT
     public void calculateFitness(Bean bean) {
-        //double[][] distances = new double[customerOrder.length][];
-
         fitness = 0;
         int demand = 0;
         valid = true;
@@ -84,9 +80,8 @@ public class Pop {
             }
 
             if(demand>bean.vehicle_load[sd]){ //invalid solution if demand exceeds capacity
-                fitness += demand*capacityPenalty;
                 valid = false;
-                return;
+                fitness += (demand-bean.vehicle_load[sd])<< Param.capacityPenalty;
             }
 
             int lci = customerOrder[i].length-1; //last customer order index
@@ -94,15 +89,14 @@ public class Pop {
             fitness += bean.depotCustomerDist[bean.nearestDepot[lc]][lc]; //return to nearest depot
             demand = 0;
         }
-        if(valid){
-            for (int i = 0; i < startDepot.length ; i++) {
-                if(startDepot[i]>bean.vehicles){
-                    valid = false;
-                    fitness+=20000;
-                    break;
-                }
+
+        for (int i = 0; i < startDepot.length ; i++) {
+            if(startDepot[i]>bean.vehicles){
+                valid = false;
+                fitness+=(startDepot[i]-bean.vehicles)<< Param.depotPenalty;
             }
         }
+
 
     }
 
