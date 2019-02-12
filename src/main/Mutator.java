@@ -16,6 +16,12 @@ public class Mutator {
         pop.customerOrder[j] = first;
     }
 
+    // randomize starting depot
+    public static void MutateD(Pop pop, Random r, Bean bean){
+        int i = r.nextInt(pop.startDepot.length);
+        pop.startDepot[i] = r.nextInt(bean.depots);
+    }
+
     //move the starting position of a vehicle
     public static void MutateM(Pop pop, Random r){
         boolean forward = r.nextBoolean();
@@ -64,29 +70,40 @@ public class Mutator {
                 }
             }
             int[] vehicles = new int[pop.vehicles.length+1];
+            int[] startDepot = new int[pop.vehicles.length+1];
             for (int i = 0; i < v+1; i++) {
                 vehicles[i] = pop.vehicles[i];
+                startDepot[i] = pop.startDepot[i];
             }
             if(v!=pop.vehicles.length-1) {
                 vehicles[v+1] = (pop.vehicles[v+1] - pop.vehicles[v])/2 + pop.vehicles[v];
             }else{
                 vehicles[v+1] = (pop.customerOrder.length - pop.vehicles[v])/2 + pop.vehicles[v];
             }
+            startDepot[v+1] = r.nextInt(bean.depots);
             for (int i = v+1; i < pop.vehicles.length; i++) {
                 vehicles[i+1] = pop.vehicles[i];
+                startDepot[i] = pop.startDepot[i];
             }
+            pop.vehicles = vehicles;
+            pop.startDepot = startDepot;
         }else{
             //pick an index not including 0
             // v0 = 0, v1=2, v2=5
             // v = 1 -> v0=0, v1=5
             int v = r.nextInt(pop.vehicles.length-1)+1;
             int[] vehicles = new int[pop.vehicles.length-1];
+            int[] startDepot = new int[pop.vehicles.length-1];
             for (int i = 0; i < v; i++) {
                 vehicles[i] = pop.vehicles[i];
+                startDepot[i] = pop.startDepot[i];
             }
             for (int i = v+1; i < pop.vehicles.length; i++) {
                 vehicles[i-1] = pop.vehicles[i];
+                startDepot[i-1] = pop.startDepot[i];
             }
+            pop.vehicles = vehicles;
+            pop.startDepot = startDepot;
         }
     }
 

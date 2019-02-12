@@ -5,14 +5,14 @@ import java.util.Random;
 
 public class Crosser {
 
-    public static Pop cross(Pop mom, Pop dad, Bean bean, Random r){
-        return new Pop(mom.customerOrder, dad.vehicles);
-    }
+//    public static Pop cross(Pop mom, Pop dad, Bean bean, Random r){
+//        return new Pop(mom.customerOrder, dad.vehicles);
+//    }
 
 
     public static Pop crossPMX(Pop mom, Pop dad, Bean bean, Random r){
         int [] customerOrder = pmx(mom.customerOrder,dad.customerOrder,r);
-        return new Pop(customerOrder, mom.vehicles);
+        return new Pop(customerOrder, mom.vehicles, mom.startDepot);
     }
 
     /*  1.  Choose  two crossover  points  at  random,  and  copy the  segment  between

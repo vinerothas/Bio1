@@ -8,6 +8,7 @@ public class Pop implements Comparable{
 
     int[] customerOrder;//order of customers
     int[] vehicles; // order starting position (index) for each vehicle, constraint [i]<[i-1] and [i]=0
+    int[] startDepot;
     boolean valid;
 
 
@@ -32,26 +33,31 @@ public class Pop implements Comparable{
             vehicles[i] = cvl*(i-vh)+(cvh*vh);
         }
 
+        startDepot = new int[vehicles.length];
+        for (int i = 0; i < startDepot.length; i++) {
+            startDepot[i] = r.nextInt(bean.depots);
+        }
+
     }
 
     // Clone an existing pop
     public Pop(Pop pop) {
-        vehicles = new int[pop.vehicles.length];
-        customerOrder = new int[pop.customerOrder.length];
-        for(int i=0; i<pop.customerOrder.length; i++) {
-            customerOrder[i] = pop.customerOrder[i];
-        }
-        for(int i=0; i<pop.vehicles.length; i++) {
-            vehicles[i] = pop.vehicles[i];
-        }
+        this.customerOrder = new int[pop.customerOrder.length];
+        this.vehicles = new int[pop.vehicles.length];
+        this.startDepot = new int[pop.startDepot.length];
+        System.arraycopy(pop.customerOrder,0, this.customerOrder,0,customerOrder.length);
+        System.arraycopy(pop.vehicles,0, this.vehicles,0,vehicles.length);
+        System.arraycopy(pop.startDepot,0, this.startDepot,0,startDepot.length);
     }
 
     // Designer baby
-    public Pop(int[] customerOrder, int[] vehicles) {
+    public Pop(int[] customerOrder, int[] vehicles, int[] startDepot) {
         this.customerOrder = new int[customerOrder.length];
         this.vehicles = new int[vehicles.length];
+        this.startDepot = new int[startDepot.length];
         System.arraycopy(customerOrder,0, this.customerOrder,0,customerOrder.length);
         System.arraycopy(vehicles,0, this.vehicles,0,vehicles.length);
+        System.arraycopy(startDepot,0, this.startDepot,0,startDepot.length);
     }
 
     public void calculateFitness(Bean bean) {
@@ -64,10 +70,9 @@ public class Pop implements Comparable{
         for(int i = 0; i<vehicles.length-1;i++){
             ci = vehicles[i]; //current index in customer order
             cc = customerOrder[ci]; //current customer
-            int sd = bean.nearestDepot[cc]; //starting depot
+            int sd = this.startDepot[i]; //starting depot
             startDepot[sd] += 1;
             demand += bean.service_demand[cc]; //handle the first customer
-            //TODO change to startDepot if representation changed
             fitness += bean.depotCustomerDist[sd][cc];
 
             for(int j = ci+1;j<vehicles[i+1];j++){ //handle the rest of the customers for the current vehicle
@@ -89,10 +94,9 @@ public class Pop implements Comparable{
         //last vehicle
         ci = vehicles[vehicles.length-1]; //current index in customer order
         cc = customerOrder[ci]; //current customer
-        int sd = bean.nearestDepot[cc]; //starting depot
+        int sd = this.startDepot[this.startDepot.length-1]; //starting depot
         startDepot[sd] += 1;
         demand += bean.service_demand[cc]; //handle the first customer
-        //TODO change to startDepot if representation changed
         fitness += bean.depotCustomerDist[sd][cc];
 
         for(int j = ci+1;j<customerOrder.length;j++){ //handle the rest of the customers for the last vehicle
@@ -129,9 +133,8 @@ public class Pop implements Comparable{
         for(int i = 0; i<vehicles.length-1;i++){
             ci = vehicles[i]; //current index in customer order
             cc = customerOrder[ci]; //current customer
-            int sd = bean.nearestDepot[cc]; //starting depot
+            int sd = startDepot[i]; //starting depot
             demand[i] += bean.service_demand[cc]; //handle the first customer
-            //TODO change to startDepot if representation changed
             distances[i] = bean.depotCustomerDist[sd][cc];
 
             for(int j = ci+1;j<vehicles[i+1];j++){ //handle the rest of the customers for the current vehicle
@@ -149,9 +152,8 @@ public class Pop implements Comparable{
         //last vehicle
         ci = vehicles[vehicles.length-1]; //current index in customer order
         cc = customerOrder[ci]; //current customer
-        int sd = bean.nearestDepot[cc]; //starting depot
+        int sd = startDepot[startDepot.length-1]; //starting depot
         solution.vehicleLoad[solution.vehicleLoad.length-1] = bean.service_demand[cc]; //handle the first customer
-        //TODO change to startDepot if representation changed
         distances[distances.length-1] = bean.depotCustomerDist[sd][cc];
 
         for(int j = ci+1;j<customerOrder.length;j++){ //handle the rest of the customers for the last vehicle
@@ -177,6 +179,7 @@ public class Pop implements Comparable{
 
     //p01 best pop
     public Pop(boolean check) {
+        startDepot = new int[]{0,0,0,1,1,1,1,2,2,3,3};
         vehicles = new int[]{0,5,8,11,15,20,26,30,34,41,46};
         customerOrder = new int[]{40, 39, 18, 41, 43,12, 24, 13,3, 17, 46,10, 31, 0, 26,22, 6, 42, 23, 5,47, 7, 25, 30, 27, 21,45, 11, 4, 37,48, 29, 33, 8,9, 38, 32, 44, 14, 36, 16,28, 1, 15, 49, 20,19, 2, 35, 34,};
     }

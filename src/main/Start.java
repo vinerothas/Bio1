@@ -5,12 +5,14 @@ import javafx.stage.Stage;
 public class Start {
     Stage stage;
     double[] maxFitness;
+    boolean stop = false;
 
     public void start(Stage stage) {
         this.stage = stage;
         if (Param.oneTestMany || Param.oneTestOnce) System.out.print("P" + Param.test + " ");
         System.out.println("Gens: " + Param.gens + "   Threads: " + Param.threads + "   Pops: " + Param.pops + "  Crossover: " + Param.crossoverRate + "  Elitism: " + Param.elitismPercent);
         System.out.println("mutationRateM: " + Param.mutationRateM + "   mutationRateS: " + Param.mutationRateS + "   mutationRateC: " + Param.mutationRateC);
+
 
         Bean bean = new Bean();
 
@@ -27,7 +29,6 @@ public class Start {
         } else {
             testP1();
         }
-
 
     }
 
@@ -46,17 +47,21 @@ public class Start {
         for (int i = 0; i < Param.gens; i++) {
             ga.run_generation();
             maxFitness[i] = ga.population[0].fitness;
+            if(stop){
+                System.out.println(new Solution(bean, ga.population[0]));
+            }
             if (i % 1000 == 0) {
                 System.out.println(i + " " + ga.population[0].fitness);
-//                System.out.println(i + " " + ga.population[0]);
-                for (int j = 0; j < 100; j++) {
-                    System.out.print(String.format("%.2f", ga.population[j].fitness) + " ");
-                }
-                System.out.println();
+                System.out.println(new Solution(bean, ga.population[0]));
+                //System.out.println(i + " " + ga.population[0]);
+                //for (int j = 0; j < 100; j++) {
+                //    System.out.print(String.format("%.2f", ga.population[j].fitness) + " ");
+                //}
+                //System.out.println();
             }
         }
 
-        FitnessPlot.plot(stage, new double[][]{maxFitness});
+        //FitnessPlot.plot(stage, new double[][]{maxFitness});
         //System.out.println(Arrays.toString(ga.population));
         //System.out.println(Arrays.toString(maxFitness));
         System.out.println(maxFitness[maxFitness.length - 1]);
@@ -90,7 +95,7 @@ public class Start {
         totalTime /= Param.tests;
         totalFitness /= Param.tests;
         System.out.println(String.format("Average time: %.2f", totalTime) + String.format("   Average fitness: %.2f", totalFitness));
-        //FitnessPlot.plot(new Stage(),testFitness);
+        FitnessPlot.plot(new Stage(),testFitness);
     }
 
     public void runTestOfMany(Bean bean) {
@@ -104,10 +109,10 @@ public class Start {
             //if(((float)((System.currentTimeMillis()-startTime)))/(float)1000 >195){break;}
             ga.run_generation();
             maxFitness[i] = ga.population[0].fitness;
-            if (i % 100 == 0) {
-                System.out.println(i + " " + ga.population[0].fitness);
+ //       if (i % 100 == 0) {
+ //               System.out.println(i + " " + ga.population[0].fitness);
 //                //if(i%2000==0)if(in.next().charAt(0)=='1')System.out.println("boop");}
-            }
+ //           }
         }
 
         //System.out.println("Threaded time: "+ga.time);

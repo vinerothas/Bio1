@@ -24,14 +24,13 @@ public class Solution {
         totalLength = pop.fitness;
         routes = pop.vehicles.length;
 
-        // TODO change to pop.startDepot if representation is changed
         startDepot = new int[routes];
         endDepot = new int[routes];
         customerOrder = new int[routes][];
         int[] vehiclesUsed = new int[bean.depots];
         vehicleNumber = new int[routes];
         for (int i = 0; i < routes; i++) {
-            startDepot[i] = bean.nearestDepot[pop.customerOrder[pop.vehicles[i]]]+1;
+            startDepot[i] = pop.startDepot[i]+1;
             vehicleNumber[i] = ++vehiclesUsed[startDepot[i]-1];
             if(i==routes-1) {
                 endDepot[i] = bean.nearestDepot[pop.customerOrder[pop.customerOrder.length-1]] + 1;
@@ -111,11 +110,11 @@ public class Solution {
         String s = "";
         s+= String.format("%.2f", totalLength)+"\n";
         for (int i = 0; i < routes; i++) {
-            s+= startDepot[i] + "   ";
-            s+= vehicleNumber[i] + "   ";
-            s+= String.format("%.2f", routeDuration[i]) + "   ";
-            s+= vehicleLoad[i] + "   ";
-            s+= endDepot[i] + "  ";
+            s+= startDepot[i] + "\t";
+            s+= vehicleNumber[i] + "\t";
+            s+= String.format("%.2f", routeDuration[i]) + "\t";
+            s+= vehicleLoad[i] + "\t";
+            s+= endDepot[i] + "\t";
             for (int j = 0; j < customerOrder[i].length; j++) {
                 s+= customerOrder[i][j]+ " ";
             }
