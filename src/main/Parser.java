@@ -20,7 +20,7 @@ public class Parser {
             String line = scanner.nextLine();
             String[] parts = line.split(" ");
 
-            bean.vehicles = Integer.parseInt(parts[0]);
+            bean.vehiclesPerDepot = Integer.parseInt(parts[0]);
             bean.customers = Integer.parseInt(parts[1]);
             bean.depots = Integer.parseInt(parts[2]);
 
@@ -86,7 +86,7 @@ public class Parser {
                 }
             }
 
-            bean.totalVehicles = bean.depots*bean.vehicles;
+            bean.totalVehicles = bean.depots*bean.vehiclesPerDepot;
             int minLoad = Integer.MAX_VALUE;
             for(int i = 0; i < bean.vehicle_load.length;i++){
                 if(bean.vehicle_load[i]<minLoad){
@@ -94,6 +94,20 @@ public class Parser {
                 }
             }
             bean.minVehicles = (int)Math.ceil(bean.totalDemand/(float)minLoad);
+
+
+            for (int i = 0; i < bean.vehicle_duration.length; i++) {
+                if(bean.vehicle_duration[i] == 0){
+                    bean.vehicle_duration[i] = Integer.MAX_VALUE;
+                }
+            }
+
+            bean.depotOfRoute = new int[bean.totalVehicles];
+            for (int i = 0; i < bean.depots; i++) {
+                for (int j = 0; j < bean.vehiclesPerDepot; j++) {
+                    bean.depotOfRoute[i*bean.vehiclesPerDepot+j] = i;
+                }
+            }
 
         } catch (IOException e) {
             e.printStackTrace();

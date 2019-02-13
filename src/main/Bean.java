@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 public class Bean {
 
-    public int vehicles; //vehicles per depot
+    public int vehiclesPerDepot; //vehiclesPerDepot per depot
     public int customers;
     public int depots;
     public int totalVehicles;
@@ -27,9 +27,12 @@ public class Bean {
 
     public int[] nearestDepot; //the id of the nearest depot for each customer
     public int totalDemand = 0;
-    public int minVehicles; // minimum number of vehicles to satisfy the demand
+    public int minVehicles; // minimum number of vehiclesPerDepot to satisfy the demand
     public double[][] customerDist; // distance between each customer
     public double[][] depotCustomerDist; // distance between every depot-customer combination
+    public int[] firstVehicleInDepot; // index in customer order of the first route for a given depot
+    public int[] vehicleDepotBound; //the index after the last vehicle of a given depot
+    public int[] depotOfRoute;
 
     public Bean(){
 
@@ -66,10 +69,17 @@ public class Bean {
                 depotCustomerDist[i][j] = Util.edist(depot_x[i],depot_y[i],customer_x[j],customer_y[j]);
             }
         }
+
+        firstVehicleInDepot = new int[depots];
+        vehicleDepotBound = new int[depots];
+        for (int i = 0; i < depots ; i++) {
+            firstVehicleInDepot[i] = i*vehiclesPerDepot;
+            vehicleDepotBound[i]= (i+1)*vehiclesPerDepot;
+        }
     }
 
     public void printBean() {
-        System.out.println("vehicles per depot: "+vehicles);
+        System.out.println("vehiclesPerDepot per depot: "+ vehiclesPerDepot);
         System.out.println("number of customers: "+customers);
         System.out.println("number of depots: "+depots);
         System.out.println("Max vehicle route duration per depot:");
@@ -99,7 +109,7 @@ public class Bean {
             System.out.println(Arrays.toString(depotCustomerDist[i]));
         }
         System.out.println("Total demand: "+totalDemand);
-        System.out.println("Minimum number of vehicles: "+minVehicles);
+        System.out.println("Minimum number of vehiclesPerDepot: "+minVehicles);
     }
 
     private static void printArray(int[] anArray) {

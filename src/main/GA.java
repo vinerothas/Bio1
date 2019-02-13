@@ -1,5 +1,6 @@
 package main;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
@@ -16,7 +17,7 @@ public class GA {
     ThreadPoolExecutor executor;
     Bean bean;
     Random r = new Random(System.currentTimeMillis());
-    Selector selector;
+    //Selector selector;
     GAthread[] gathreads;
 
     public GA(Bean bean, int pops, int threads) {
@@ -24,13 +25,13 @@ public class GA {
         this.popSize = pops;
         this.threads = threads;
         population = new Pop[popSize];
-        selector = new Selector(popSize,bean,r);
+        //selector = new Selector(popSize,bean,r);
 
         for (int i = 0; i < popSize; i++) {
             population[i] = new Pop(r, bean);
-            population[i].calculateFitness(bean);
+            population[i].calculateFitness(bean, null);
         }
-        //Arrays.sort(population, new SortPop());
+        Arrays.sort(population, new SortPop());
         //System.out.println(Arrays.toString(population));
 
         executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
@@ -49,7 +50,6 @@ public class GA {
     public void run_generation() {
         Pop[] children = new Pop[popSize];
 
-        //long timeBefore = System.currentTimeMillis();
         CountDownLatch latch = new CountDownLatch(threads);
         for (int i = 0; i < threads; i++) {
             gathreads[i].population = population;
@@ -68,11 +68,54 @@ public class GA {
             e.printStackTrace();
             return; // \_(0_o)_/
         }
-        //time += System.currentTimeMillis()-timeBefore;
 
-        //Arrays.sort(children, new SortPop());
-        population = selector.select(children,population);
-        //Arrays.sort(population, new SortPop());
+        chooseNextGen2(children);
+    }
+
+    private void chooseNextGen2(Pop[] children){
+        Arrays.sort(children, new SortPop());
+        Pop[] nextGen = new Pop[popSize];
+
+
+        int ci = 0;
+        int pi = 0;
+
+        if(children[0].fitness<population[0].fitness){
+            nextGen[0] = children[ci++];
+        }else{
+            nextGen[0] = population[pi++];
+        }
+
+        for (int i = 1; i < popSize ; i++) {
+            if(children[ci].fitness<population[pi].fitness && children[ci].fitness-nextGen[i-1].fitness > Param.fitnessComparison){
+                nextGen[i] = children[ci++];
+            }else{
+                nextGen[i] = population[pi++];
+            }
+        }
+        population = nextGen;
+    }
+
+    private void chooseNextGen(Pop[] children){
+        Arrays.sort(children, new SortPop());
+        Pop[] nextGen = new Pop[popSize];
+
+        int ci = 0;
+        int pi = 0;
+
+        if(children[0].fitness<population[0].fitness){
+            nextGen[0] = children[ci++];
+        }else{
+            nextGen[0] = population[pi++];
+        }
+        for (int i = 1; i < popSize ; i++) {
+            if(children[ci].fitness<population[pi].fitness){
+                nextGen[i] = children[ci++];
+            }else{
+                nextGen[i] = population[pi++];
+            }
+        }
+        population = nextGen;
     }
 
     class SortPop implements Comparator<Pop> {

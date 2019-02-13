@@ -5,13 +5,12 @@ import javafx.stage.Stage;
 public class Start {
     Stage stage;
     double[] maxFitness;
-    boolean stop = false;
 
     public void start(Stage stage) {
         this.stage = stage;
         if (Param.oneTestMany || Param.oneTestOnce) System.out.print("P" + Param.test + " ");
-        System.out.println("Gens: " + Param.gens + "   Threads: " + Param.threads + "   Pops: " + Param.pops + "  Crossover: " + Param.crossoverRate + "  Elitism: " + Param.elitismPercent);
-        System.out.println("mutationRateM: " + Param.mutationRateM + "   mutationRateS: " + Param.mutationRateS + "   mutationRateC: " + Param.mutationRateC);
+        System.out.println("Gens: " + Param.gens + "   Threads: " + Param.threads + "   Pops: " + Param.pops + "  Crossover: " + Param.crossoverRate + "  Tournament Size: " + Param.tournamentSize);
+        System.out.println("mutationRateM: " + Param.mutationRateM + "   mutationRateS: " + Param.mutationRateS + "   mutationRateI: " + Param.mutationRateI);
 
 
         Bean bean = new Bean();
@@ -34,6 +33,7 @@ public class Start {
 
     public Solution runSingleTest(int test, Bean bean) {
         long startTime = System.currentTimeMillis();
+        long lastTime = System.currentTimeMillis();
         Parser parser = new Parser();
         parser.parseToBean(test, bean);
 
@@ -47,17 +47,19 @@ public class Start {
         for (int i = 0; i < Param.gens; i++) {
             ga.run_generation();
             maxFitness[i] = ga.population[0].fitness;
-            if(stop){
-                System.out.println(new Solution(bean, ga.population[0]));
-            }
-            if (i % 1000 == 0) {
-                System.out.println(i + " " + ga.population[0].fitness);
-                System.out.println(new Solution(bean, ga.population[0]));
+            if(System.currentTimeMillis() - lastTime> 2000){
+            //if (i % 500 == 0) {
+                lastTime = System.currentTimeMillis();
+                float elapsedTime = (System.currentTimeMillis()-startTime)/(float)1000;
+                System.out.println("Generation: "+ i + "    Best fitness: " + String.format("%.4f",ga.population[0].fitness)+ "    Valid: "+ga.population[0].valid+ "    Elapsed time: "+String.format("%.2f",elapsedTime));
+                //Solution solution = new Solution(bean);
+                //ga.population[0].calculateFitness(bean,solution);
+                //System.out.println(solution);
                 //System.out.println(i + " " + ga.population[0]);
-                //for (int j = 0; j < 100; j++) {
-                //    System.out.print(String.format("%.2f", ga.population[j].fitness) + " ");
-                //}
-                //System.out.println();
+                for (int j = 0; j < 100; j++) {
+                    System.out.print(String.format("%.2f", ga.population[j].fitness) + " ");
+                }
+                System.out.println();
             }
         }
 
@@ -68,7 +70,10 @@ public class Start {
         //System.out.println(ga.population[0]);
         float timeElapsed = ((float) ((System.currentTimeMillis() - startTime))) / (float) 1000;
         System.out.println(String.format("Seconds elapsed: %.2f", timeElapsed));
-        return new Solution(bean, ga.population[0]);
+        Solution solution = new Solution(bean);
+        ga.population[0].calculateFitness(bean,solution);
+        System.out.println(solution);
+        return solution;
         //return null;
     }
 
@@ -125,10 +130,10 @@ public class Start {
         bean.calculateNearestDepot();
         bean.calculateDist();
         Pop pop = new Pop(true);
-        pop.calculateFitness(bean);
+        pop.calculateFitness(bean,null);
         Solution solution = new Solution(bean, pop);
-        RoutePlot.plot(stage, solution, bean);
         System.out.println(solution);
+        //RoutePlot.plot(stage, solution, bean);
     }
 
     private void loadSolution(Bean bean, Solution solution, int test) {

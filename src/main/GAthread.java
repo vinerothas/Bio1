@@ -13,13 +13,7 @@ public class GAthread implements Runnable {
     CountDownLatch latch;
     Random r = new Random(System.currentTimeMillis());
 
-//    static double mutationRateM = 0.8;
-//    static double mutationRateS = 0.8;
-//    static double mutationRateA = 0.07;
-//    static double mutationRateR = 0.04;
-//    static double crossoverRate = 0.001;
-
-    public GAthread(Bean bean, Pop[] population, Pop[] children, int startIndex, int endIndex, CountDownLatch latch){
+    public GAthread(Bean bean, Pop[] population, Pop[] children, int startIndex, int endIndex, CountDownLatch latch) {
         this.bean = bean;
         this.population = population;
         this.children = children;
@@ -31,38 +25,64 @@ public class GAthread implements Runnable {
     @Override
     public void run() {
         try {
-            for (int i = startIndex; i < endIndex; i++) {
-                float chance = r.nextFloat();
-                if (chance <= Param.crossoverRate) {
-                    children[i] = Crosser.crossPMX(population[i], population[r.nextInt(population.length)], bean, r);
-                } else  {
-                    children[i] = new Pop(population[i]);
-                    mutate(children[i]);
-                }
-                children[i].calculateFitness(bean);
+            for (int i = startIndex; i < endIndex; i += 2) {
+                tournamentSelection(i);
+                children[i].calculateFitness(bean, null);
+                children[i+1].calculateFitness(bean, null);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         latch.countDown();
     }
 
-    public void mutate(Pop child){
+    public void tournamentSelection(int index) {
+        int bestIndex;
+        int secondBestIndex;
+
+        int i1 = r.nextInt(population.length);
+        int i2 = r.nextInt(population.length);
+        if (population[i1].fitness > population[i2].fitness) {
+            bestIndex = i1;
+            secondBestIndex = i2;
+        } else {
+            bestIndex = i2;
+            secondBestIndex = i1;
+        }
+
+        for (int i = 0; i < Param.tournamentSize - 2; i++) {
+            i1 = r.nextInt(population.length);
+            if (population[i1].fitness > population[secondBestIndex].fitness) {
+                if (population[i1].fitness > population[bestIndex].fitness) {
+                    secondBestIndex = bestIndex;
+                    bestIndex = i;
+                } else {
+                    secondBestIndex = i;
+                }
+            }
+        }
 
         float chance = r.nextFloat();
-        if(chance<=Param.mutationRate){
-            //for (int i = 0; i < r.nextInt(10); i++) {
-                if(chance<= Param.mutationRateM) {
-                    Mutator.MutateM(child, r);
-                }else if(chance<= Param.mutationRateC+Param.mutationRateM){
-                    Mutator.MutateC(child,r,bean);
-                }else if(chance<= Param.mutationRateC+Param.mutationRateM+Param.mutationRateS){
-                    Mutator.MutateS(child,r);
-                }else{
-                    Mutator.MutateD(child,r,bean);
-                }
-               // chance = r.nextFloat();
-            //}
+        if (chance <= Param.crossoverRate) {
+            children[index] = Crosser.cross(population[bestIndex], population[secondBestIndex], bean, r);
+            children[index + 1] = Crosser.cross(population[secondBestIndex], population[bestIndex], bean, r);
+
+        }else{
+            children[index] = new Pop(population[bestIndex]);
+            children[index+1] = new Pop(population[secondBestIndex]);
+            mutate(children[index]);
+            mutate(children[index+1]);
+        }
+    }
+
+    public void mutate(Pop child) {
+        float chance = r.nextFloat();
+        if (chance <= Param.mutationRateM) {
+            Mutator.MutateM(child, r,bean, true);
+        } else if (chance >= 1-Param.mutationRateS) {
+            Mutator.MutateS(child, r, bean);
+        } else {
+            Mutator.MutateI(child, r,bean);
         }
 
     }

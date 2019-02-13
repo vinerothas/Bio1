@@ -15,36 +15,42 @@ public class Solution {
     int[] endDepot;
     int routes;
     int[][] customerOrder;
+    boolean valid;
 
-    public Solution(){
-
+    public Solution(Bean bean){
+        startDepot = bean.depotOfRoute;
+        vehicleNumber = new int[bean.totalVehicles];
+        for (int i = 0; i < bean.depots ; i++) {
+            for (int j = 0; j < bean.vehiclesPerDepot; j++) {
+                vehicleNumber[i*bean.vehiclesPerDepot+j] = j+1;
+            }
+        }
     }
 
     public Solution(Bean bean, Pop pop){
         totalLength = pop.fitness;
-        routes = pop.vehicles.length;
 
-        startDepot = new int[routes];
+        pop.calculateFitness(bean,this);
+        valid = pop.valid;
+
+        // TODO fix this block
+        startDepot = bean.depotOfRoute;
         endDepot = new int[routes];
         customerOrder = new int[routes][];
         int[] vehiclesUsed = new int[bean.depots];
         vehicleNumber = new int[routes];
         for (int i = 0; i < routes; i++) {
-            startDepot[i] = pop.startDepot[i]+1;
-            vehicleNumber[i] = ++vehiclesUsed[startDepot[i]-1];
-            if(i==routes-1) {
-                endDepot[i] = bean.nearestDepot[pop.customerOrder[pop.customerOrder.length-1]] + 1;
-                customerOrder[i] = new int[pop.customerOrder.length-pop.vehicles[i]];
-            }else{
-                endDepot[i] = bean.nearestDepot[pop.customerOrder[pop.vehicles[i+1]-1]] + 1;
-                customerOrder[i] = new int[pop.vehicles[i+1]-pop.vehicles[i]];
+            customerOrder[i] = new int[pop.customerOrder[i].length];
+            if(pop.customerOrder[i].length==0){
+                continue;
             }
-
+            vehicleNumber[i] = ++vehiclesUsed[startDepot[i]];
+            endDepot[i] = bean.nearestDepot[pop.customerOrder[i][pop.customerOrder[i].length-1]]+1;
             for (int j = 0; j < customerOrder[i].length; j++) {
-                customerOrder[i][j]=pop.customerOrder[pop.vehicles[i]+j]+1;
+                customerOrder[i][j]=pop.customerOrder[i][j]+1;
             }
         }
-        pop.calculateRouteValues(bean,this);
+
         if (!pop.valid){
             System.out.println("INVALID POP USED AS SOLUTION:\n"+pop);
         }
@@ -108,6 +114,9 @@ public class Solution {
 
     public String toString(){
         String s = "";
+        if (!valid){
+            s+="INVALID POP USED AS SOLUTION:\n";
+        }
         s+= String.format("%.2f", totalLength)+"\n";
         for (int i = 0; i < routes; i++) {
             s+= startDepot[i] + "\t";

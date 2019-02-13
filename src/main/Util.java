@@ -19,8 +19,8 @@ public class Util {
     }
 
     // Euclidean distance
-    static double edist(int x1, int y1, int x2, int y2){
-        return Math.sqrt(Math.pow(x1-x2,2) + Math.pow(y1-y2,2));
+    static double edist(int x1, int y1, int x2, int y2) {
+        return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
     }
 
     static public <T> T[] concatenate(T[] a, T[] b) {
@@ -33,5 +33,40 @@ public class Util {
         System.arraycopy(b, 0, c, aLen, bLen);
 
         return c;
+    }
+
+    static int[] removeFromArray(int[] arr, int index) {
+
+        // If the array is empty
+        // or the index is not in array range
+        // return the original array
+        if (arr == null
+                || index < 0
+                || index >= arr.length) {
+
+            return arr;
+        }
+
+        // Create another array of size one less
+        int[] anotherArray = new int[arr.length - 1];
+
+        // Copy the elements except the index
+        // from original array to the other array
+        for (int i = 0, k = 0; i < arr.length; i++) {
+
+            // if the index is
+            // the removal element index
+            if (i == index) {
+                continue;
+            }
+
+            // if the index is not
+            // the removal element index
+            anotherArray[k++] = arr[i];
+        }
+
+        // return the resultant array
+        return anotherArray;
+
     }
 }
