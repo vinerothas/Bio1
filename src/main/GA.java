@@ -17,7 +17,6 @@ public class GA {
     ThreadPoolExecutor executor;
     Bean bean;
     Random r = new Random(System.currentTimeMillis());
-    //Selector selector;
     GAthread[] gathreads;
 
     public GA(Bean bean, int pops, int threads) {
@@ -76,11 +75,10 @@ public class GA {
         Arrays.sort(children, new SortPop());
         Pop[] nextGen = new Pop[popSize];
 
-
         int ci = 0;
         int pi = 0;
 
-        if(children[0].fitness<population[0].fitness){
+        if(children[0].fitness<population[0].fitness && population[0].fitness-children[0].fitness > Param.fitnessComparison){
             nextGen[0] = children[ci++];
         }else{
             nextGen[0] = population[pi++];

@@ -43,8 +43,9 @@ Else if k > 0.8, choose the first entry in the list, regardless of feasibility.
             double bestInfeasibleCost = Double.MAX_VALUE;
             int newRouteIndex = -1;
 
-            for (int j = 0; j < bean.vehiclesPerDepot; j++) {
-                int index = bean.firstVehicleInDepot[depot]+j;
+            for (int j = 0; j < bean.totalVehicles; j++) {
+                depot = bean.depotOfRoute[j];
+                int index = j;
                 if(offspring.customerOrder[index].length == 0){
                     newRouteIndex = index;
                     continue; //new route only if no feasible locations
@@ -116,7 +117,7 @@ Else if k > 0.8, choose the first entry in the list, regardless of feasibility.
                     offspring.customerOrder[bestIndex] = insertIntoRoute(offspring.customerOrder[bestIndex], bestIndex2, r0[i]);
                 }else if(bestInfeasibleIndex!=-1){
                     offspring.customerOrder[bestInfeasibleIndex] = insertIntoRoute(offspring.customerOrder[bestInfeasibleIndex], bestInfeasibleIndex2, r0[i]);
-                }else{
+                }else if(newRouteIndex!=-1){
                     offspring.customerOrder[newRouteIndex] = new int[]{r0[i]};
                 }
             }

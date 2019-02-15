@@ -20,9 +20,10 @@ public class RoutePlot {
         lineChart.setTitle("Routes");
         //defining a series
         for (int i = 0; i < solution.routes; i++) {
+            int route[] = solution.customerOrder[i];
+            if(route.length==0)continue;;
             XYChart.Series series = new XYChart.Series();
             series.setName("Route "+i);
-            int route[] = solution.customerOrder[i];
             int d = solution.startDepot[i]-1;
             series.getData().add(new XYChart.Data(bean.depot_x[d],bean.depot_y[d]));
             for (int j = 0; j < route.length; j++) {

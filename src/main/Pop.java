@@ -28,7 +28,6 @@ public class Pop {
         int[] lastAssignment = new int[bean.totalVehicles];
         Arrays.fill(lastAssignment,-1);
 
-
         for (int i = 0; i < customers.length; i++) {
             int nd = bean.nearestDepot[customers[i]]; //nearest depot
             int fv = bean.firstVehicleInDepot[nd]; //first index in depot
@@ -76,9 +75,11 @@ public class Pop {
         int demand[] = new int[bean.totalVehicles];
         double routeLength[] = new double[bean.totalVehicles];
         valid = true;
+        int numberOfCustomers = 0;
         for(int i = 0; i<bean.depots;i++){
             for (int j = bean.firstVehicleInDepot[i]; j <bean.vehicleDepotBound[i] ; j++) {
                 if(customerOrder[j].length==0)continue;
+                numberOfCustomers += customerOrder[j].length;
                 demand[j] += bean.service_demand[customerOrder[j][0]]; //handle the first customer
                 routeLength[j] += bean.depotCustomerDist[i][customerOrder[j][0]];
                 for (int k = 1; k < customerOrder[j].length; k++) {//handle the rest of the customers for the current vehicle
@@ -87,7 +88,7 @@ public class Pop {
                 }
                 int lci = customerOrder[j].length-1; //last customer order index
                 int lc = customerOrder[j][lci]; //last customer
-                routeLength[j] += bean.depotCustomerDist[bean.nearestDepot[lc]][lc]; //return to nearest de
+                routeLength[j] += bean.depotCustomerDist[bean.nearestDepot[lc]][lc]; //return to nearest depot
 
                 fitness+= routeLength[j];
                 if(demand[j]>bean.vehicle_load[i]){ //invalid solution if demand exceeds capacity
@@ -107,9 +108,15 @@ public class Pop {
             solution.vehicleLoad = demand;
             int routes = 0;
             for (int i = 0; i < customerOrder.length ; i++) {
-                if(customerOrder.length != 0) routes++;
+                if(customerOrder[i].length != 0){
+                    routes++;
+                }
             }
             solution.routes = routes;
+            if(numberOfCustomers<bean.customers){
+                valid = false;
+            }
+            solution.valid = valid;
         }
 
     }
@@ -141,6 +148,14 @@ public class Pop {
         customerOrder[13] = new int[]{19, 2, 35, 34,};
         customerOrder[14] = new int[]{};
         customerOrder[15] = new int[]{};
+    }
+
+    public boolean rightNumberOfCustomers(Bean bean){
+        int number = 0;
+        for (int i = 0; i < customerOrder.length ; i++) {
+            number+= customerOrder[i].length;
+        }
+        return number==bean.customers;
     }
 
 }

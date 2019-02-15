@@ -17,6 +17,8 @@ public class Solution {
     int[][] customerOrder;
     boolean valid;
 
+    public Solution(){}
+
     public Solution(Bean bean){
         startDepot = bean.depotOfRoute;
         vehicleNumber = new int[bean.totalVehicles];
@@ -29,12 +31,15 @@ public class Solution {
 
     public Solution(Bean bean, Pop pop){
         totalLength = pop.fitness;
+        routes = bean.depotOfRoute.length;
 
         pop.calculateFitness(bean,this);
         valid = pop.valid;
 
         // TODO fix this block
-        startDepot = bean.depotOfRoute;
+        startDepot = new int[bean.depotOfRoute.length];
+                System.arraycopy(bean.depotOfRoute,0,startDepot,0,bean.depotOfRoute.length);
+
         endDepot = new int[routes];
         customerOrder = new int[routes][];
         int[] vehiclesUsed = new int[bean.depots];
@@ -50,10 +55,13 @@ public class Solution {
                 customerOrder[i][j]=pop.customerOrder[i][j]+1;
             }
         }
-
-        if (!pop.valid){
-            System.out.println("INVALID POP USED AS SOLUTION:\n"+pop);
+        for (int i = 0; i < startDepot.length; i++) {
+            startDepot[i]++;
         }
+
+//        if (!pop.valid){
+//            System.out.println("INVALID POP USED AS SOLUTION:\n"+pop);
+//        }
     }
 
 
@@ -114,11 +122,12 @@ public class Solution {
 
     public String toString(){
         String s = "";
-        if (!valid){
-            s+="INVALID POP USED AS SOLUTION:\n";
-        }
+//        if (!valid){
+//            s+="INVALID POP USED AS SOLUTION:\n";
+//        }
         s+= String.format("%.2f", totalLength)+"\n";
         for (int i = 0; i < routes; i++) {
+            if(customerOrder[i].length==0)continue;
             s+= startDepot[i] + "\t";
             s+= vehicleNumber[i] + "\t";
             s+= String.format("%.2f", routeDuration[i]) + "\t";

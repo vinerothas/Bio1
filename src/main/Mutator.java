@@ -58,7 +58,8 @@ public class Mutator {
         MutateM(pop,r,bean,false);
     }
 
-    public static void MutateS(Pop pop, Random r, Bean bean){
+    //swamp two customers withing one route
+    public static void MutateS(Pop pop, Random r, Bean bean, boolean cap){
         int ri = r.nextInt(pop.customerOrder.length);
         while(pop.customerOrder[ri].length<2){
             ri = r.nextInt(pop.customerOrder.length);
@@ -76,7 +77,7 @@ public class Mutator {
         pop.customerOrder[ri][i2] = c1;
         pop.customerOrder[ri][i1] = c2;
         double newRouteCost = routeCost(bean, bean.depotOfRoute[ri], pop.customerOrder[ri]);
-        if(newRouteCost>=routeCost){ //revert to better route
+        if(newRouteCost>=routeCost && cap){ //revert to better route
             pop.customerOrder[ri][i1] = c1;
             pop.customerOrder[ri][i2] = c2;
         }

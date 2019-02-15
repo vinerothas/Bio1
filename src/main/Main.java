@@ -7,16 +7,11 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) {
         new Start().start(stage);
-        //TODO different selection
-        //TODO stop button
-
     }
 
     public static void main(String[] args) {
         //System.out.println(Runtime.getRuntime().availableProcessors());
         launch();
     }
-
-
 
 }

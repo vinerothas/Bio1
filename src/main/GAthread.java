@@ -66,7 +66,6 @@ public class GAthread implements Runnable {
         if (chance <= Param.crossoverRate) {
             children[index] = Crosser.cross(population[bestIndex], population[secondBestIndex], bean, r);
             children[index + 1] = Crosser.cross(population[secondBestIndex], population[bestIndex], bean, r);
-
         }else{
             children[index] = new Pop(population[bestIndex]);
             children[index+1] = new Pop(population[secondBestIndex]);
@@ -78,9 +77,18 @@ public class GAthread implements Runnable {
     public void mutate(Pop child) {
         float chance = r.nextFloat();
         if (chance <= Param.mutationRateM) {
-            Mutator.MutateM(child, r,bean, true);
+            chance = r.nextFloat();
+            if(chance < Param.noisyOperatorChance) {
+                Mutator.MutateM(child, r, bean, false);
+            }else{
+                Mutator.MutateM(child, r, bean, true);
+            }
         } else if (chance >= 1-Param.mutationRateS) {
-            Mutator.MutateS(child, r, bean);
+            if(chance < Param.noisyOperatorChance) {
+                Mutator.MutateS(child, r, bean, false);
+            }else{
+                Mutator.MutateS(child, r, bean, true);
+            }
         } else {
             Mutator.MutateI(child, r,bean);
         }

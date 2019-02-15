@@ -25,7 +25,11 @@ public class Start {
             RoutePlot.plot(secondStage, solution, bean);
         } else if (Param.oneTestMany) {
             runManyTests(Param.test);
-        } else {
+        }else if(Param.plotSolution){
+            Solution solution = new Solution();
+            loadSolution(bean,solution,Param.test);
+            RoutePlot.plot(stage,solution,bean);
+        }else {
             testP1();
         }
 
@@ -51,15 +55,12 @@ public class Start {
             //if (i % 500 == 0) {
                 lastTime = System.currentTimeMillis();
                 float elapsedTime = (System.currentTimeMillis()-startTime)/(float)1000;
-                System.out.println("Generation: "+ i + "    Best fitness: " + String.format("%.4f",ga.population[0].fitness)+ "    Valid: "+ga.population[0].valid+ "    Elapsed time: "+String.format("%.2f",elapsedTime));
-                //Solution solution = new Solution(bean);
-                //ga.population[0].calculateFitness(bean,solution);
-                //System.out.println(solution);
-                //System.out.println(i + " " + ga.population[0]);
+                System.out.println("Generation: "+ i + "    Best fitness: " + String.format("%.4f",ga.population[0].fitness)+ "    Best solution is valid: "+ga.population[0].valid+ "    Elapsed time: "+String.format("%.2f",elapsedTime));
                 for (int j = 0; j < 100; j++) {
                     System.out.print(String.format("%.2f", ga.population[j].fitness) + " ");
                 }
                 System.out.println();
+                printSolution(ga.population,bean);
             }
         }
 
@@ -70,8 +71,8 @@ public class Start {
         //System.out.println(ga.population[0]);
         float timeElapsed = ((float) ((System.currentTimeMillis() - startTime))) / (float) 1000;
         System.out.println(String.format("Seconds elapsed: %.2f", timeElapsed));
-        Solution solution = new Solution(bean);
-        ga.population[0].calculateFitness(bean,solution);
+        Solution solution = new Solution(bean,ga.population[0]);
+        //ga.population[0].calculateFitness(bean,solution);
         System.out.println(solution);
         return solution;
         //return null;
@@ -134,6 +135,21 @@ public class Start {
         Solution solution = new Solution(bean, pop);
         System.out.println(solution);
         //RoutePlot.plot(stage, solution, bean);
+    }
+
+    private void printSolution(Pop[] population, Bean bean){
+        for (int i = 0; i < population.length; i++) {
+            Solution solution = new Solution(bean,population[i]);
+            population[i].calculateFitness(bean,solution);
+            if(population[i].valid && solution.valid){
+                System.out.println("Best valid solution:");
+                System.out.println(solution);
+                return;
+            }
+        }
+        System.out.println("No valid solution for current population\n");
+
+
     }
 
     private void loadSolution(Bean bean, Solution solution, int test) {
